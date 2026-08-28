@@ -170,6 +170,66 @@ export function addStudentToGroup(data: {
   return newGroupStudent;
 }
 
+export function updateStudentEnrollmentDetails(
+  groupStudentId: string,
+  updates: {
+    full_name?: string;
+    phone?: string;
+    booking_date?: string;
+    booking_method?: BookingMethod;
+    receiving_account_id?: string;
+  }
+): void {
+  const currentUser = getCurrentUser();
+  const groupStudents = store.getGroupStudents();
+  const index = groupStudents.findIndex(gs => gs.id === groupStudentId);
+
+  if (index === -1) throw new Error('تسجيل الطالب غير موجود');
+
+  const gs = groupStudents[index];
+
+  // 1. Update Student record
+  if (updates.full_name || updates.phone) {
+    const students = store.getStudents();
+    const stdIndex = students.findIndex(s => s.id === gs.student_id);
+    if (stdIndex !== -1) {
+      const student = students[stdIndex];
+      if (updates.full_name) student.full_name = updates.full_name.trim();
+      if (updates.phone) student.phone = updates.phone.trim();
+      student.updated_at = new Date().toISOString();
+      students[stdIndex] = student;
+      store.saveStudents(students);
+    }
+  }
+
+  // 2. Update GroupStudent record
+  if (updates.booking_date) gs.booking_date = updates.booking_date;
+  if (updates.booking_method) gs.booking_method = updates.booking_method;
+  gs.updated_at = new Date().toISOString();
+
+  groupStudents[index] = gs;
+  store.saveGroupStudents(groupStudents);
+
+  // 3. Update Payments receiving account if provided
+  if (updates.receiving_account_id) {
+    const payments = store.getPayments();
+    const studentPayments = payments.filter(p => p.group_student_id === groupStudentId && p.status === 'valid');
+    studentPayments.forEach(p => {
+      p.receiving_account_id = updates.receiving_account_id;
+      p.updated_at = new Date().toISOString();
+    });
+    store.savePayments(payments);
+  }
+
+  store.addAuditLog({
+    user_id: currentUser?.id,
+    user_name: currentUser?.full_name,
+    action: `تعديل بيانات سطر الطالب الحجز والهاتف المكتمل`,
+    entity_type: 'StudentEnrollmentEdit',
+    entity_id: groupStudentId,
+  });
+}
+
 export function transferStudentGroup(
   groupStudentId: string,
   newGroupId: string,
