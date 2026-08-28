@@ -45,7 +45,7 @@ export const INITIAL_CENTER: CenterInfo = {
   id: 'center-1',
   name: 'SHLA Management',
   logo_url: '/logo.jpeg',
-  cover_url: '',
+  cover_url: '/cover.jpeg',
   phone: '01012345678',
   address: 'القاهرة - مصر',
   currency: 'EGP',

@@ -8,7 +8,6 @@ import { getGroupStudentsWithDetails } from '@/services/student-service';
 import { store } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
 import { StatCard } from '@/components/StatCard';
-import { StatusBadge } from '@/components/StatusBadge';
 import { useLanguage } from '@/lib/language-context';
 import {
   Users2,
@@ -21,6 +20,7 @@ import {
   FileSpreadsheet,
   ArrowUpRight,
   TrendingUp,
+  Sparkles,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -34,7 +34,7 @@ export default function DashboardPage() {
     setGroups(getGroups());
     const validPayments = store.getPayments().filter(p => p.status === 'valid').slice(0, 5);
     const groupStudents = getGroupStudentsWithDetails();
-    
+
     const enriched = validPayments.map(p => {
       const gs = groupStudents.find(g => g.id === p.group_student_id);
       return { ...p, groupStudent: gs };
@@ -44,21 +44,36 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
-        <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+      {/* Cover Header Banner */}
+      <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-slate-800/80 bg-slate-900 group">
+        {/* Cover Background Image */}
+        <div className="w-full h-56 sm:h-72 lg:h-80 relative">
+          <img
+            src="/cover.jpeg"
+            alt="SHLA Academy Cover Banner"
+            className="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700"
+          />
+          {/* Subtle gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+        </div>
+
+        {/* Content Floating Over Cover */}
+        <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 z-10">
           <div className="flex items-center gap-4">
             <img
               src="/logo.jpeg"
               alt="SHLA Logo"
-              className="w-16 h-16 rounded-2xl object-cover border-2 border-white/20 shadow-xl hidden sm:block"
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border-2 border-white/30 shadow-2xl backdrop-blur-md bg-slate-900/60"
             />
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-bold mb-1 backdrop-blur-md">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span>Samar Hamdy Language Academy</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight drop-shadow-md">
                 SHLA Management
               </h1>
-              <p className="text-sm text-slate-300 mt-1 max-w-xl">
+              <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-xl drop-shadow-sm mt-0.5">
                 {t(
                   'ملخص المجموعات، الطلاب، حركة الخزينة، والمبالغ المستحقة بلمسة واحدة.',
                   'Groups summary, students directory, treasury flow, and outstanding debt at your fingertips.'
@@ -68,17 +83,17 @@ export default function DashboardPage() {
           </div>
 
           {/* Quick Action Buttons */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2.5">
             <Link
               href="/groups?action=new"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/40 transition-all border border-blue-400/20"
             >
               <Plus className="w-4 h-4" />
               <span>{t('مجموعة جديدة', 'New Group')}</span>
             </Link>
             <Link
               href="/students?action=new"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs border border-slate-700 transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-100 font-bold text-xs border border-slate-700/80 backdrop-blur-md transition-all"
             >
               <Plus className="w-4 h-4 text-emerald-400" />
               <span>{t('إضافة طالب', 'Add Student')}</span>
