@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { getCenterBranding, updateCenterBranding } from '@/services/settings-service';
 import { CenterInfo } from '@/types';
-import { Settings, Building2, Phone, MapPin, CheckCircle2, Upload, Camera } from 'lucide-react';
+import { Settings, Building2, CheckCircle2, FileImage } from 'lucide-react';
 
 export default function SettingsPage() {
   const [branding, setBranding] = useState<CenterInfo>(getCenterBranding());
@@ -39,6 +39,17 @@ export default function SettingsPage() {
     reader.readAsDataURL(file);
   };
 
+  const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = event => {
+      const result = event.target?.result as string;
+      setBranding(prev => ({ ...prev, cover_url: result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in duration-200">
       <div>
@@ -47,7 +58,7 @@ export default function SettingsPage() {
           <span>إعدادات هوية السنتر (Center Branding)</span>
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          تخصيص اسم السنتر، الشعار، رقم التليفون، والشهادات والتقارير
+          تخصيص اسم السنتر، اللوجو، غلاف الهيدر (Cover)، رقم التليفون والشهادات
         </p>
       </div>
 
@@ -56,7 +67,7 @@ export default function SettingsPage() {
           {success && (
             <div className="p-4 bg-emerald-50 text-emerald-700 rounded-2xl font-semibold flex items-center gap-2 border border-emerald-200">
               <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-              <span>تم حفظ هوية وإعدادات السنتر بنجاح!</span>
+              <span>تم حفظ هوية السنتر وصورة الغلاف بنجاح!</span>
             </div>
           )}
 
@@ -68,7 +79,7 @@ export default function SettingsPage() {
 
           {/* Logo Upload & Preview */}
           <div className="flex flex-col sm:flex-row items-center gap-6 p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
-            <div className="w-20 h-20 rounded-2xl bg-slate-200 border border-slate-300 flex items-center justify-center overflow-hidden relative">
+            <div className="w-20 h-20 rounded-2xl bg-slate-200 border border-slate-300 flex items-center justify-center overflow-hidden relative flex-shrink-0">
               {branding.logo_url ? (
                 <img src={branding.logo_url} alt="Logo" className="w-full h-full object-cover" />
               ) : (
@@ -85,6 +96,29 @@ export default function SettingsPage() {
                 accept="image/*"
                 onChange={handleLogoUpload}
                 className="block text-xs text-slate-500 file:mr-0 file:ml-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 cursor-pointer"
+              />
+            </div>
+          </div>
+
+          {/* Cover Image Upload & Preview */}
+          <div className="flex flex-col sm:flex-row items-center gap-6 p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+            <div className="w-36 h-20 rounded-2xl bg-slate-200 border border-slate-300 flex items-center justify-center overflow-hidden relative flex-shrink-0">
+              {branding.cover_url ? (
+                <img src={branding.cover_url} alt="Cover Preview" className="w-full h-full object-cover" />
+              ) : (
+                <FileImage className="w-8 h-8 text-slate-400" />
+              )}
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-800 mb-1">صورة غلاف الواجهة الرئيسية (Cover Banner)</label>
+              <p className="text-[11px] text-slate-500 mb-2">
+                رفع أو تغيير صورة البانر في أعلى الصفحة الرئيسية (لوحة التحكم)
+              </p>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleCoverUpload}
+                className="block text-xs text-slate-500 file:mr-0 file:ml-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700 cursor-pointer"
               />
             </div>
           </div>

@@ -28,10 +28,14 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState(getFinanceSummary());
   const [groups, setGroups] = useState(getGroups());
   const [recentPayments, setRecentPayments] = useState<any[]>([]);
+  const [coverUrl, setCoverUrl] = useState<string>('/cover.jpeg');
 
   useEffect(() => {
     setSummary(getFinanceSummary());
     setGroups(getGroups());
+    const center = store.getCenter();
+    setCoverUrl(center.cover_url || '/cover.jpeg');
+
     const validPayments = store.getPayments().filter(p => p.status === 'valid').slice(0, 5);
     const groupStudents = getGroupStudentsWithDetails();
 
@@ -44,20 +48,20 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      {/* Cover Header Banner */}
-      <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-slate-800/80 bg-slate-900 group">
+      {/* Dynamic Cover Header Banner */}
+      <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-slate-800/80 bg-slate-950 group">
         {/* Cover Background Image */}
-        <div className="w-full h-56 sm:h-72 lg:h-80 relative">
+        <div className="w-full h-64 sm:h-72 lg:h-80 relative">
           <img
-            src="/cover.jpeg"
+            src={coverUrl}
             alt="SHLA Academy Cover Banner"
-            className="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700"
+            className="w-full h-full object-cover object-center transform group-hover:scale-102 transition-transform duration-700"
           />
-          {/* Subtle gradient overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+          {/* Subtle gradient overlay at the bottom only for buttons */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
         </div>
 
-        {/* Content Floating Over Cover */}
+        {/* Floating Controls Over Cover: Stacked Vertically (زر مجموعة جديدة فوق إضافة طالب) */}
         <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 z-10">
           <div className="flex items-center gap-4">
             <img
@@ -82,18 +86,21 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Quick Action Buttons */}
-          <div className="flex flex-wrap gap-2.5">
+          {/* Quick Action Buttons Stacked Vertically (مجموعة جديدة فوق إضافة طالب) */}
+          <div className="flex flex-col gap-2.5 sm:min-w-[160px]">
+            {/* Top Button: مجموعة جديدة */}
             <Link
               href="/groups?action=new"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/40 transition-all border border-blue-400/20"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/40 transition-all border border-blue-400/20"
             >
               <Plus className="w-4 h-4" />
               <span>{t('مجموعة جديدة', 'New Group')}</span>
             </Link>
+
+            {/* Bottom Button: إضافة طالب */}
             <Link
               href="/students?action=new"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-100 font-bold text-xs border border-slate-700/80 backdrop-blur-md transition-all"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-100 font-bold text-xs border border-slate-700/80 backdrop-blur-md transition-all"
             >
               <Plus className="w-4 h-4 text-emerald-400" />
               <span>{t('إضافة طالب', 'Add Student')}</span>
