@@ -7,7 +7,7 @@ import {
 export const INITIAL_USERS: UserProfile[] = [
   {
     id: 'usr-manager-1',
-    full_name: 'د. سمر حمدي - مدير الأكاديمية (Manager)',
+    full_name: 'د / سمر حمدي مدير SHLA',
     email: 'manager@center.com',
     phone: '01000000001',
     role: 'manager',
@@ -43,8 +43,8 @@ export const INITIAL_USERS: UserProfile[] = [
 // Default Center Branding
 export const INITIAL_CENTER: CenterInfo = {
   id: 'center-1',
-  name: 'Samar Hamdy Language Academy (SHLA)',
-  logo_url: '',
+  name: 'SHLA Management',
+  logo_url: '/logo.jpeg',
   cover_url: '',
   phone: '01012345678',
   address: 'القاهرة - مصر',
@@ -220,7 +220,7 @@ export const INITIAL_SETTLEMENTS: Settlement[] = [
     delivered_by: 'usr-assistant-1',
     delivered_by_name: 'ريم (Assistant 1)',
     received_by: 'usr-manager-1',
-    received_by_name: 'د. سمر حمدي (Manager)',
+    received_by_name: 'د / سمر حمدي مدير SHLA',
     notes: 'تسليم جزء من نقدية خزينة السنتر للمدير',
     created_at: '2025-10-02T12:00:00Z',
   }
@@ -230,7 +230,7 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
   {
     id: 'log-1',
     user_id: 'usr-manager-1',
-    user_name: 'دكتور أحمد (Manager)',
+    user_name: 'د / سمر حمدي مدير SHLA',
     action: 'تأسيس المجموعة 221',
     entity_type: 'Group',
     entity_id: 'grp-221',

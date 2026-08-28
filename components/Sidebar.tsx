@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { UserProfile } from '@/types';
+import { useLanguage } from '@/lib/language-context';
 import {
   LayoutDashboard,
   Users2,
@@ -16,7 +17,7 @@ import {
   Settings,
   ShieldCheck,
   LogOut,
-  Building2,
+  Globe,
 } from 'lucide-react';
 import { logoutUser } from '@/services/auth-service';
 import { StatusBadge } from './StatusBadge';
@@ -27,18 +28,19 @@ interface SidebarProps {
 
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
+  const { lang, toggleLang, t } = useLanguage();
   const isManager = user?.role === 'manager';
 
   const navItems = [
-    { label: 'الرئيسية', href: '/dashboard', icon: LayoutDashboard, managerOnly: false },
-    { label: 'المجموعات', href: '/groups', icon: Users2, managerOnly: false },
-    { label: 'الطلاب', href: '/students', icon: GraduationCap, managerOnly: false },
-    { label: 'المدفوعات والإيصالات', href: '/payments', icon: CreditCard, managerOnly: false },
-    { label: 'إدارة الماليات', href: '/finance', icon: Wallet, managerOnly: false },
-    { label: 'التقارير المالية', href: '/reports', icon: FileSpreadsheet, managerOnly: false },
-    { label: 'إدارة المستخدمين', href: '/users', icon: UserCheck, managerOnly: true },
-    { label: 'إعدادات الهوية', href: '/settings', icon: Settings, managerOnly: true },
-    { label: 'سجل العمليات', href: '/audit-log', icon: ShieldCheck, managerOnly: true },
+    { label: t('الرئيسية', 'Dashboard'), href: '/dashboard', icon: LayoutDashboard, managerOnly: false },
+    { label: t('المجموعات', 'Groups'), href: '/groups', icon: Users2, managerOnly: false },
+    { label: t('الطلاب', 'Students'), href: '/students', icon: GraduationCap, managerOnly: false },
+    { label: t('المدفوعات والإيصالات', 'Payments & Receipts'), href: '/payments', icon: CreditCard, managerOnly: false },
+    { label: t('إدارة الماليات', 'Finance'), href: '/finance', icon: Wallet, managerOnly: false },
+    { label: t('التقارير المالية', 'Reports'), href: '/reports', icon: FileSpreadsheet, managerOnly: false },
+    { label: t('إدارة المستخدمين', 'Users Management'), href: '/users', icon: UserCheck, managerOnly: true },
+    { label: t('إعدادات الهوية', 'Branding Settings'), href: '/settings', icon: Settings, managerOnly: true },
+    { label: t('سجل العمليات', 'Audit Log'), href: '/audit-log', icon: ShieldCheck, managerOnly: true },
   ];
 
   const filteredItems = navItems.filter(item => !item.managerOnly || isManager);
@@ -49,12 +51,14 @@ export function Sidebar({ user }: SidebarProps) {
       <aside className="hidden lg:flex flex-col w-64 bg-slate-900 text-slate-100 border-l border-slate-800 min-h-screen sticky top-0 shadow-xl">
         {/* Branding Header */}
         <div className="p-5 border-b border-slate-800 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
-            <Building2 className="w-6 h-6" />
-          </div>
+          <img
+            src="/logo.jpeg"
+            alt="SHLA Logo"
+            className="w-10 h-10 rounded-xl object-cover border border-slate-700 shadow-md"
+          />
           <div>
-            <h2 className="font-bold text-base tracking-wide text-white">English Center</h2>
-            <p className="text-xs text-slate-400">نظام إدارة السنتر</p>
+            <h2 className="font-bold text-base tracking-wide text-white">SHLA Management</h2>
+            <p className="text-xs text-slate-400">Samar Hamdy Language Academy</p>
           </div>
         </div>
 
@@ -69,7 +73,7 @@ export function Sidebar({ user }: SidebarProps) {
             </div>
             <div className="mt-2 flex items-center justify-between">
               <StatusBadge status={user.role} type="user" />
-              <span className="text-[10px] text-emerald-400 font-medium">متصل الان</span>
+              <span className="text-[10px] text-emerald-400 font-medium">{t('متصل الآن', 'Online')}</span>
             </div>
           </div>
         )}
@@ -102,8 +106,16 @@ export function Sidebar({ user }: SidebarProps) {
           })}
         </nav>
 
-        {/* Logout Button */}
-        <div className="p-4 border-t border-slate-800">
+        {/* Language Switcher & Logout Button */}
+        <div className="p-4 border-t border-slate-800 space-y-2">
+          <button
+            onClick={toggleLang}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors border border-slate-700"
+          >
+            <Globe className="w-4 h-4 text-blue-400" />
+            <span>{lang === 'ar' ? '🌐 Switch to English' : '🌐 التبديل إلى العربية'}</span>
+          </button>
+
           <button
             onClick={() => {
               logoutUser();
@@ -112,12 +124,12 @@ export function Sidebar({ user }: SidebarProps) {
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-rose-400 hover:bg-rose-500/10 transition-colors border border-rose-500/20"
           >
             <LogOut className="w-4 h-4" />
-            <span>تسجيل الخروج</span>
+            <span>{t('تسجيل الخروج', 'Log Out')}</span>
           </button>
         </div>
       </aside>
 
-      {/* MOBILE BOTTOM NAVIGATION BAR (TOUCH FRIENDLY) */}
+      {/* MOBILE BOTTOM NAVIGATION BAR */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-2 py-2 flex items-center justify-around">
         {filteredItems.slice(0, 5).map(item => {
           const isActive = pathname === item.href;

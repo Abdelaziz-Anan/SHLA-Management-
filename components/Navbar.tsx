@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { UserProfile } from '@/types';
 import { StatusBadge } from './StatusBadge';
 import { logoutUser } from '@/services/auth-service';
-import { Building2, LogOut, Menu, X, ShieldAlert } from 'lucide-react';
+import { useLanguage } from '@/lib/language-context';
+import { LogOut, Menu, X, Globe } from 'lucide-react';
 import Link from 'next/link';
 
 interface NavbarProps {
@@ -13,6 +14,7 @@ interface NavbarProps {
 
 export function Navbar({ user }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { lang, toggleLang, t } = useLanguage();
   const isManager = user?.role === 'manager';
 
   return (
@@ -26,18 +28,29 @@ export function Navbar({ user }: NavbarProps) {
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm lg:hidden">
-              <Building2 className="w-5 h-5" />
-            </div>
-            <h1 className="text-lg font-bold text-slate-900 tracking-tight">
-              نظام إدارة السنتر
+          <div className="flex items-center gap-2.5">
+            <img
+              src="/logo.jpeg"
+              alt="SHLA Logo"
+              className="w-9 h-9 rounded-xl object-cover border border-slate-200 shadow-xs"
+            />
+            <h1 className="text-lg font-extrabold text-slate-900 tracking-tight">
+              SHLA Management
             </h1>
           </div>
         </div>
 
-        {/* Right User Info & Quick Action */}
+        {/* Right Controls: Language Switcher & User Info */}
         <div className="flex items-center gap-3">
+          {/* Language Toggle Button */}
+          <button
+            onClick={toggleLang}
+            className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all border border-slate-200 flex items-center gap-1.5"
+          >
+            <Globe className="w-4 h-4 text-blue-600" />
+            <span>{lang === 'ar' ? 'English' : 'عربي'}</span>
+          </button>
+
           {user ? (
             <div className="flex items-center gap-3">
               <div className="hidden sm:flex flex-col text-left">
@@ -51,10 +64,10 @@ export function Navbar({ user }: NavbarProps) {
                   window.location.href = '/login';
                 }}
                 className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors"
-                title="تسجيل الخروج"
+                title={t('تسجيل الخروج', 'Log Out')}
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span>خروج</span>
+                <span>{t('خروج', 'Exit')}</span>
               </button>
             </div>
           ) : (
@@ -62,7 +75,7 @@ export function Navbar({ user }: NavbarProps) {
               href="/login"
               className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
             >
-              تسجيل الدخول
+              {t('تسجيل الدخول', 'Log In')}
             </Link>
           )}
         </div>
@@ -83,42 +96,42 @@ export function Navbar({ user }: NavbarProps) {
             onClick={() => setMobileMenuOpen(false)}
             className="block px-3 py-2 rounded-lg text-sm hover:bg-slate-800"
           >
-            الرئيسية
+            {t('الرئيسية', 'Dashboard')}
           </Link>
           <Link
             href="/groups"
             onClick={() => setMobileMenuOpen(false)}
             className="block px-3 py-2 rounded-lg text-sm hover:bg-slate-800"
           >
-            المجموعات
+            {t('المجموعات', 'Groups')}
           </Link>
           <Link
             href="/students"
             onClick={() => setMobileMenuOpen(false)}
             className="block px-3 py-2 rounded-lg text-sm hover:bg-slate-800"
           >
-            الطلاب
+            {t('الطلاب', 'Students')}
           </Link>
           <Link
             href="/payments"
             onClick={() => setMobileMenuOpen(false)}
             className="block px-3 py-2 rounded-lg text-sm hover:bg-slate-800"
           >
-            المدفوعات والإيصالات
+            {t('المدفوعات والإيصالات', 'Payments')}
           </Link>
           <Link
             href="/finance"
             onClick={() => setMobileMenuOpen(false)}
             className="block px-3 py-2 rounded-lg text-sm hover:bg-slate-800"
           >
-            إدارة الماليات
+            {t('إدارة الماليات', 'Finance')}
           </Link>
           <Link
             href="/reports"
             onClick={() => setMobileMenuOpen(false)}
             className="block px-3 py-2 rounded-lg text-sm hover:bg-slate-800"
           >
-            التقارير المالية
+            {t('التقارير المالية', 'Reports')}
           </Link>
           {isManager && (
             <>
@@ -128,21 +141,21 @@ export function Navbar({ user }: NavbarProps) {
                 onClick={() => setMobileMenuOpen(false)}
                 className="block px-3 py-2 rounded-lg text-sm text-purple-400 hover:bg-slate-800"
               >
-                إدارة المستخدمين
+                {t('إدارة المستخدمين', 'User Management')}
               </Link>
               <Link
                 href="/settings"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block px-3 py-2 rounded-lg text-sm text-purple-400 hover:bg-slate-800"
               >
-                إعدادات الهوية
+                {t('إعدادات الهوية', 'Branding Settings')}
               </Link>
               <Link
                 href="/audit-log"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block px-3 py-2 rounded-lg text-sm text-purple-400 hover:bg-slate-800"
               >
-                سجل العمليات
+                {t('سجل العمليات', 'Audit Logs')}
               </Link>
             </>
           )}
@@ -153,7 +166,7 @@ export function Navbar({ user }: NavbarProps) {
             }}
             className="w-full text-right px-3 py-2 rounded-lg text-sm text-rose-400 font-semibold hover:bg-rose-950/30"
           >
-            تسجيل الخروج
+            {t('تسجيل الخروج', 'Log Out')}
           </button>
         </div>
       )}

@@ -1,14 +1,15 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { LanguageProvider } from '@/lib/language-context';
 
 export const metadata: Metadata = {
-  title: 'نظام إدارة السنتر | English Center Management System',
-  description: 'نظام إلكتروني متكامل لإدارة مجموعات ومدفوعات وحسابات سنتر اللغة الإنجليزية',
+  title: 'SHLA Management | Samar Hamdy Language Academy',
+  description: 'نظام إلكتروني متكامل لإدارة أكاديمية د/ سمر حمدي - SHLA Management',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'نظام السنتر',
+    title: 'SHLA Management',
   },
 };
 
@@ -28,7 +29,9 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" className="h-full bg-slate-50">
       <body className="h-full font-sans antialiased text-slate-900 bg-slate-50 selection:bg-blue-500 selection:text-white">
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );
