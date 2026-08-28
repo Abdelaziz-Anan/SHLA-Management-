@@ -12,9 +12,11 @@ import {
   deleteSessionFromGroup,
 } from '@/services/group-service';
 import { getGroupStudentsWithDetails, updateStudentEnrollmentDetails } from '@/services/student-service';
-import { Group, GroupSession, GroupStudent, BookingMethod } from '@/types';
+import { updatePaymentReceipt } from '@/services/payment-service';
+import { Group, GroupSession, GroupStudent, BookingMethod, Payment } from '@/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { StatusBadge } from '@/components/StatusBadge';
+import { ReceiptModal } from '@/components/ReceiptModal';
 import { useLanguage } from '@/lib/language-context';
 import {
   Calendar,
@@ -30,7 +32,9 @@ import {
   CreditCard,
   X,
   Users2,
-  Settings,
+  Camera,
+  FileImage,
+  Upload,
 } from 'lucide-react';
 
 export default function GroupDetailsPage() {
@@ -44,13 +48,18 @@ export default function GroupDetailsPage() {
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [newSessionDate, setNewSessionDate] = useState<string>('');
 
+  // Receipt Modal State
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
+  const [activePaymentForReceipt, setActivePaymentForReceipt] = useState<Payment | null>(null);
+
   // Row Edit State
   const [editingRowStudent, setEditingRowStudent] = useState<GroupStudent | null>(null);
   const [editFullName, setEditFullName] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editBookingDate, setEditBookingDate] = useState('');
   const [editBookingMethod, setEditBookingMethod] = useState<BookingMethod>('Center');
-  const [editReceivingAccountId, setEditReceivingAccountId] = useState('acc-center-cash');
+  const [accountTypeOption, setAccountTypeOption] = useState<'center_desk' | 'custom'>('center_desk');
+  const [customWalletNumber, setCustomWalletNumber] = useState('');
   const [editError, setEditError] = useState('');
 
   const loadData = () => {
@@ -104,6 +113,37 @@ export default function GroupDetailsPage() {
     }
   };
 
+  // Handle Receipt Upload/View Button Click
+  const handleOpenReceipt = (gs: GroupStudent) => {
+    let firstPay = gs.payments?.[0];
+    if (!firstPay) {
+      // Create a virtual payment placeholder for receipt upload if no payment exists
+      firstPay = {
+        id: `pay-receipt-${gs.id}`,
+        group_student_id: gs.id,
+        amount: gs.total_paid || 0,
+        payment_date: gs.booking_date,
+        payment_method: 'Vodafone Cash',
+        status: 'valid',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+    }
+    setActivePaymentForReceipt(firstPay);
+    setReceiptModalOpen(true);
+  };
+
+  const handleSaveReceiptUrl = (receiptUrl: string) => {
+    if (!activePaymentForReceipt) return;
+    try {
+      updatePaymentReceipt(activePaymentForReceipt.id, receiptUrl);
+      loadData();
+      alert('تم حفظ إيصال التحويل بنجاح');
+    } catch (e: any) {
+      alert(e.message || 'فشل حفظ الإيصال');
+    }
+  };
+
   // Open Edit Row Modal
   const handleOpenRowEdit = (gs: GroupStudent) => {
     setEditingRowStudent(gs);
@@ -111,8 +151,15 @@ export default function GroupDetailsPage() {
     setEditPhone(gs.student?.phone || '');
     setEditBookingDate(gs.booking_date || '');
     setEditBookingMethod(gs.booking_method || 'Center');
-    const firstPayAcc = gs.payments?.[0]?.receiving_account_id || 'acc-center-cash';
-    setEditReceivingAccountId(firstPayAcc);
+
+    const currentAccNum = gs.receiving_account_number || '';
+    if (currentAccNum === 'Center Desk' || currentAccNum === 'Center Desk Cash' || currentAccNum.includes('خزينة')) {
+      setAccountTypeOption('center_desk');
+      setCustomWalletNumber('');
+    } else {
+      setAccountTypeOption('custom');
+      setCustomWalletNumber(currentAccNum !== '-' ? currentAccNum : '');
+    }
     setEditError('');
   };
 
@@ -126,13 +173,29 @@ export default function GroupDetailsPage() {
       return;
     }
 
+    let finalReceivingAccId = 'acc-center-cash';
+    let finalCustomAcc = '';
+
+    if (accountTypeOption === 'center_desk') {
+      finalReceivingAccId = 'acc-center-cash';
+      finalCustomAcc = 'Center Desk';
+    } else {
+      if (!customWalletNumber.trim()) {
+        setEditError('يرجى كتابة رقم محفظة/حساب التحويل الذي تريده');
+        return;
+      }
+      finalReceivingAccId = 'acc-mgr-wallet';
+      finalCustomAcc = customWalletNumber.trim();
+    }
+
     try {
       updateStudentEnrollmentDetails(editingRowStudent.id, {
         full_name: editFullName,
         phone: editPhone,
         booking_date: editBookingDate,
         booking_method: editBookingMethod,
-        receiving_account_id: editReceivingAccountId,
+        receiving_account_id: finalReceivingAccId,
+        custom_receiving_account: finalCustomAcc,
       });
 
       setEditingRowStudent(null);
@@ -322,7 +385,7 @@ export default function GroupDetailsPage() {
         </div>
       </div>
 
-      {/* ENROLLED STUDENTS TABLE (مع إمكانية تعديل أي خانة بالسطر!) */}
+      {/* ENROLLED STUDENTS TABLE (مع إضافة عمود إيصال التحويل ورقم المحفظة الحر!) */}
       <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <div>
@@ -331,7 +394,7 @@ export default function GroupDetailsPage() {
               <span>{t('طلاب المجموعة', 'Enrolled Students')} ({students.length})</span>
             </h2>
             <p className="text-xs text-slate-400 font-medium mt-0.5">
-              {t('يمكنك تعديل أي بيانات بالسطر (الاسم، الهاتف، التاريخ، المحفظة) بالضغط على زر تعديل السطر', 'Click Edit Row to modify name, phone, booking date, or receiving account for any student')}
+              {t('إمكانية رفع/معاينة الإيصال مباشرة، وتعديل أي رقم محفظة بحرية', 'Direct receipt upload/viewing and full wallet number customization')}
             </p>
           </div>
         </div>
@@ -351,6 +414,7 @@ export default function GroupDetailsPage() {
                   <th className="p-4">{t('تاريخ الحجز', 'Booking Date')}</th>
                   <th className="p-4">{t('جهة / وسيلة الحجز', 'Booking Method')}</th>
                   <th className="p-4">{t('رقم حساب / محفظة التحويل', 'Receiving Account / Wallet')}</th>
+                  <th className="p-4 text-center">{t('إيصال التحويل', 'Receipt Proof')}</th>
                   <th className="p-4">{t('المبلغ المدفوع', 'Total Paid')}</th>
                   <th className="p-4">{t('المتبقي', 'Remaining')}</th>
                   <th className="p-4">{t('الحالة الماليّة', 'Status')}</th>
@@ -358,48 +422,79 @@ export default function GroupDetailsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
-                {students.map((gs, idx) => (
-                  <tr key={gs.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="p-4 font-bold text-slate-400">{idx + 1}</td>
-                    <td className="p-4 font-extrabold text-slate-900">{gs.student?.full_name}</td>
-                    <td className="p-4 font-semibold text-slate-600" dir="ltr">{gs.student?.phone}</td>
-                    <td className="p-4 text-slate-500">{formatDate(gs.booking_date)}</td>
-                    <td className="p-4 font-bold text-slate-800">{gs.booking_method}</td>
-                    <td className="p-4 font-bold text-purple-700" dir="ltr">
-                      {gs.receiving_account_number || '-'}
-                    </td>
-                    <td className="p-4 font-bold text-emerald-600">{formatCurrency(gs.total_paid || 0)}</td>
-                    <td className="p-4 font-bold text-rose-600">{formatCurrency(gs.remaining_balance || 0)}</td>
-                    <td className="p-4">
-                      <StatusBadge status={gs.payment_status || 'Not Paid'} type="payment" />
-                    </td>
-                    <td className="p-4 text-left flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleOpenRowEdit(gs)}
-                        className="px-2.5 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 font-bold rounded-lg transition-colors border border-purple-200 flex items-center gap-1"
-                        title={t('تعديل كل بيانات هذا السطر', 'Edit this student row')}
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                        <span>{t('تعديل السطر', 'Edit Row')}</span>
-                      </button>
+                {students.map((gs, idx) => {
+                  const receiptUrl = gs.payments?.[0]?.receipt_url;
 
-                      <Link
-                        href={`/students/${gs.id}`}
-                        className="px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold rounded-lg transition-colors border border-blue-200 flex items-center gap-1"
-                      >
-                        <CreditCard className="w-3.5 h-3.5" />
-                        <span>{t('الملف والدفعات', 'Payments')}</span>
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
+                  return (
+                    <tr key={gs.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="p-4 font-bold text-slate-400">{idx + 1}</td>
+                      <td className="p-4 font-extrabold text-slate-900">{gs.student?.full_name}</td>
+                      <td className="p-4 font-semibold text-slate-600" dir="ltr">{gs.student?.phone}</td>
+                      <td className="p-4 text-slate-500">{formatDate(gs.booking_date)}</td>
+                      <td className="p-4 font-bold text-slate-800">{gs.booking_method}</td>
+                      
+                      {/* Receiving Account / Custom Wallet Column */}
+                      <td className="p-4 font-extrabold text-purple-700" dir="ltr">
+                        {gs.receiving_account_number || '-'}
+                      </td>
+
+                      {/* Receipt Upload / View Column */}
+                      <td className="p-4 text-center">
+                        <button
+                          onClick={() => handleOpenReceipt(gs)}
+                          className={`px-3 py-1.5 rounded-xl font-bold text-[11px] inline-flex items-center gap-1.5 transition-all border ${
+                            receiptUrl
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                              : 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100'
+                          }`}
+                        >
+                          {receiptUrl ? (
+                            <>
+                              <FileImage className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>{t('عرض الإيصال 📄', 'View Receipt 📄')}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-3.5 h-3.5 text-purple-600" />
+                              <span>{t('رفع إيصال 📷', 'Upload Receipt 📷')}</span>
+                            </>
+                          )}
+                        </button>
+                      </td>
+
+                      <td className="p-4 font-bold text-emerald-600">{formatCurrency(gs.total_paid || 0)}</td>
+                      <td className="p-4 font-bold text-rose-600">{formatCurrency(gs.remaining_balance || 0)}</td>
+                      <td className="p-4">
+                        <StatusBadge status={gs.payment_status || 'Not Paid'} type="payment" />
+                      </td>
+                      <td className="p-4 text-left flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleOpenRowEdit(gs)}
+                          className="px-2.5 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 font-bold rounded-lg transition-colors border border-purple-200 flex items-center gap-1"
+                          title={t('تعديل كل بيانات هذا السطر', 'Edit this student row')}
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                          <span>{t('تعديل السطر', 'Edit Row')}</span>
+                        </button>
+
+                        <Link
+                          href={`/students/${gs.id}`}
+                          className="px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold rounded-lg transition-colors border border-blue-200 flex items-center gap-1"
+                        >
+                          <CreditCard className="w-3.5 h-3.5" />
+                          <span>{t('الملف والدفعات', 'Payments')}</span>
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
         </div>
       </div>
 
-      {/* EDIT ROW MODAL (تعديل السطر بالكامل) */}
+      {/* EDIT ROW MODAL (مع الخيار الحر لكتابة أي رقم محفظة!) */}
       {editingRowStudent && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-in fade-in duration-200">
@@ -469,17 +564,52 @@ export default function GroupDetailsPage() {
                 </select>
               </div>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">{t('جهة/محفظة التحويل (Receiving Account)', 'Receiving Wallet')}</label>
-                <select
-                  value={editReceivingAccountId}
-                  onChange={e => setEditReceivingAccountId(e.target.value)}
-                  className="w-full p-2.5 border border-slate-200 rounded-xl text-sm font-bold text-purple-700"
-                >
-                  <option value="acc-center-cash">خزينة السنتر (Center Desk Cash)</option>
-                  <option value="acc-mgr-wallet">محفظة المدير (Manager Wallet - 01011112222)</option>
-                  <option value="acc-center-instapay">إنستاباي السنتر (Center InstaPay)</option>
-                </select>
+              {/* RECEIVING WALLET / ACCOUNT CHOICE */}
+              <div className="p-3 bg-purple-50/70 rounded-2xl border border-purple-100 space-y-3">
+                <label className="block font-bold text-purple-900 mb-1">
+                  {t('جهة / محفظة التحويل (Receiving Account)', 'Receiving Account / Wallet')}
+                </label>
+
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
+                    <input
+                      type="radio"
+                      name="account_choice"
+                      checked={accountTypeOption === 'center_desk'}
+                      onChange={() => setAccountTypeOption('center_desk')}
+                      className="w-4 h-4 text-purple-600"
+                    />
+                    <span>خزينة السنتر (Center Desk Cash)</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
+                    <input
+                      type="radio"
+                      name="account_choice"
+                      checked={accountTypeOption === 'custom'}
+                      onChange={() => setAccountTypeOption('custom')}
+                      className="w-4 h-4 text-purple-600"
+                    />
+                    <span>رقم محفظة / حساب آخر (كتابة يدويّة حرة)</span>
+                  </label>
+                </div>
+
+                {accountTypeOption === 'custom' && (
+                  <div className="pt-2 animate-in fade-in duration-200">
+                    <label className="block font-bold text-purple-900 mb-1">
+                      {t('اكتب رقم المحفظة / الحساب الذي تم التحويل عليه *', 'Type Custom Wallet/Account Number *')}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={customWalletNumber}
+                      onChange={e => setCustomWalletNumber(e.target.value)}
+                      placeholder="مثال: 01024274489 أو 01099998888"
+                      className="w-full p-2.5 bg-white border border-purple-300 rounded-xl text-sm font-bold text-purple-800"
+                      dir="ltr"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
@@ -500,6 +630,20 @@ export default function GroupDetailsPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* RECEIPT MODAL */}
+      {receiptModalOpen && activePaymentForReceipt && (
+        <ReceiptModal
+          isOpen={receiptModalOpen}
+          onClose={() => {
+            setReceiptModalOpen(false);
+            setActivePaymentForReceipt(null);
+          }}
+          receiptUrl={activePaymentForReceipt.receipt_url}
+          onSaveReceipt={handleSaveReceiptUrl}
+          title={`إيصال التحويل - ${students.find(s => s.id === activePaymentForReceipt.group_student_id)?.student?.full_name || 'الطالب'}`}
+        />
       )}
     </div>
   );

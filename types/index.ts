@@ -99,6 +99,7 @@ export interface GroupStudent {
   total_paid?: number;
   remaining_balance?: number;
   receiving_account_number?: string;
+  custom_receiving_account?: string;
   payment_status?: 'Not Paid' | 'Partially Paid' | 'Fully Paid' | 'Overpaid';
   created_at: string;
   updated_at: string;
@@ -113,6 +114,7 @@ export interface Payment {
   receiving_account_id?: string;
   receiving_account?: PaymentAccount;
   receipt_url?: string;
+  custom_receiving_account?: string;
   created_by?: string;
   created_by_name?: string;
   status: 'valid' | 'reversed';

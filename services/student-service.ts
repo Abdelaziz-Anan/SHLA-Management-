@@ -37,10 +37,17 @@ export function getGroupStudentsWithDetails(groupId?: string, search?: string): 
     const total_paid = studentPayments.reduce((sum, p) => sum + p.amount, 0);
     const remaining_balance = Math.max(0, gs.course_price - total_paid);
     const payment_status = getPaymentStatus(gs.course_price, total_paid);
-    const receivingAcc = studentPayments[0]?.receiving_account;
-    const receiving_account_number = receivingAcc
-      ? `${receivingAcc.account_number || receivingAcc.account_name}`
-      : '-';
+    
+    // Resolve receiving account display
+    const firstPay = studentPayments[0];
+    let receiving_account_number = '-';
+    if (gs.custom_receiving_account && gs.custom_receiving_account.trim() !== '') {
+      receiving_account_number = gs.custom_receiving_account.trim();
+    } else if (firstPay?.custom_receiving_account && firstPay.custom_receiving_account.trim() !== '') {
+      receiving_account_number = firstPay.custom_receiving_account.trim();
+    } else if (firstPay?.receiving_account) {
+      receiving_account_number = `${firstPay.receiving_account.account_number || firstPay.receiving_account.account_name}`;
+    }
 
     return {
       ...gs,
@@ -178,6 +185,7 @@ export function updateStudentEnrollmentDetails(
     booking_date?: string;
     booking_method?: BookingMethod;
     receiving_account_id?: string;
+    custom_receiving_account?: string;
   }
 ): void {
   const currentUser = getCurrentUser();
@@ -205,26 +213,32 @@ export function updateStudentEnrollmentDetails(
   // 2. Update GroupStudent record
   if (updates.booking_date) gs.booking_date = updates.booking_date;
   if (updates.booking_method) gs.booking_method = updates.booking_method;
+  if (updates.custom_receiving_account !== undefined) {
+    gs.custom_receiving_account = updates.custom_receiving_account.trim();
+  }
   gs.updated_at = new Date().toISOString();
 
   groupStudents[index] = gs;
   store.saveGroupStudents(groupStudents);
 
-  // 3. Update Payments receiving account if provided
-  if (updates.receiving_account_id) {
-    const payments = store.getPayments();
-    const studentPayments = payments.filter(p => p.group_student_id === groupStudentId && p.status === 'valid');
-    studentPayments.forEach(p => {
+  // 3. Update Payments receiving account / custom account if provided
+  const payments = store.getPayments();
+  const studentPayments = payments.filter(p => p.group_student_id === groupStudentId && p.status === 'valid');
+  studentPayments.forEach(p => {
+    if (updates.receiving_account_id) {
       p.receiving_account_id = updates.receiving_account_id;
-      p.updated_at = new Date().toISOString();
-    });
-    store.savePayments(payments);
-  }
+    }
+    if (updates.custom_receiving_account !== undefined) {
+      p.custom_receiving_account = updates.custom_receiving_account.trim();
+    }
+    p.updated_at = new Date().toISOString();
+  });
+  store.savePayments(payments);
 
   store.addAuditLog({
     user_id: currentUser?.id,
     user_name: currentUser?.full_name,
-    action: `تعديل بيانات سطر الطالب الحجز والهاتف المكتمل`,
+    action: `تعديل بيانات سطر الطالب والتحويلات المكتملة`,
     entity_type: 'StudentEnrollmentEdit',
     entity_id: groupStudentId,
   });
