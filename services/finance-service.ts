@@ -86,7 +86,7 @@ export function recordSettlement(data: {
     delivered_by: data.delivered_by || currentUser?.id || 'usr-assistant-1',
     delivered_by_name: data.delivered_by_name || currentUser?.full_name || 'المساعد',
     received_by: 'usr-manager-1',
-    received_by_name: 'دكتور أحمد (Manager)',
+    received_by_name: 'د. سمر حمدي (Manager)',
     proof_url: data.proof_url,
     notes: data.notes,
     created_at: new Date().toISOString(),

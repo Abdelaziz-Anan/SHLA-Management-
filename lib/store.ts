@@ -7,7 +7,7 @@ import {
 export const INITIAL_USERS: UserProfile[] = [
   {
     id: 'usr-manager-1',
-    full_name: 'دكتور أحمد - مدير السنتر (Manager)',
+    full_name: 'د. سمر حمدي - مدير الأكاديمية (Manager)',
     email: 'manager@center.com',
     phone: '01000000001',
     role: 'manager',
@@ -220,7 +220,7 @@ export const INITIAL_SETTLEMENTS: Settlement[] = [
     delivered_by: 'usr-assistant-1',
     delivered_by_name: 'ريم (Assistant 1)',
     received_by: 'usr-manager-1',
-    received_by_name: 'دكتور أحمد (Manager)',
+    received_by_name: 'د. سمر حمدي (Manager)',
     notes: 'تسليم جزء من نقدية خزينة السنتر للمدير',
     created_at: '2025-10-02T12:00:00Z',
   }

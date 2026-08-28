@@ -45,6 +45,51 @@ export function createUser(data: {
   return newUser;
 }
 
+export function updateUserProfile(
+  userId: string,
+  updates: {
+    full_name?: string;
+    email?: string;
+    phone?: string;
+    role?: UserRole;
+  }
+): UserProfile {
+  const currentUser = getCurrentUser();
+  const users = store.getUsers();
+  const index = users.findIndex(u => u.id === userId);
+
+  if (index === -1) throw new Error('المستخدم غير موجود');
+
+  const oldUser = users[index];
+  const updatedUser: UserProfile = {
+    ...oldUser,
+    ...updates,
+    updated_at: new Date().toISOString(),
+  };
+
+  users[index] = updatedUser;
+  store.saveUsers(users);
+
+  // If currentUser edited themselves, update session
+  if (currentUser && currentUser.id === userId) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('center_sys_current_user', JSON.stringify(updatedUser));
+    }
+  }
+
+  store.addAuditLog({
+    user_id: currentUser?.id,
+    user_name: currentUser?.full_name,
+    action: `تعديل بيانات الحساب: ${updatedUser.full_name} (${updatedUser.email})`,
+    entity_type: 'UserUpdate',
+    entity_id: userId,
+    old_data: oldUser,
+    new_data: updatedUser,
+  });
+
+  return updatedUser;
+}
+
 export function toggleUserStatus(userId: string): UserProfile {
   const currentUser = getCurrentUser();
   const users = store.getUsers();
