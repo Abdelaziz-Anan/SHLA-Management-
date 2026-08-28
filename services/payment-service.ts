@@ -21,6 +21,7 @@ export function recordPayment(data: {
   payment_date?: string;
   payment_method: PaymentMethod;
   receiving_account_id: string;
+  custom_receiving_account?: string;
   receipt_url?: string;
   notes?: string;
 }): Payment {
@@ -43,6 +44,7 @@ export function recordPayment(data: {
     payment_method: data.payment_method,
     receiving_account_id: data.receiving_account_id,
     receiving_account: account,
+    custom_receiving_account: data.custom_receiving_account?.trim(),
     receipt_url: data.receipt_url,
     created_by: currentUser?.id,
     created_by_name: currentUser?.full_name,
@@ -64,6 +66,59 @@ export function recordPayment(data: {
   });
 
   return newPayment;
+}
+
+export function updatePaymentDetails(
+  paymentId: string,
+  updates: {
+    amount?: number;
+    payment_date?: string;
+    payment_method?: PaymentMethod;
+    receiving_account_id?: string;
+    custom_receiving_account?: string;
+    receipt_url?: string;
+    status?: 'valid' | 'reversed';
+    reversal_reason?: string;
+  }
+): Payment {
+  const currentUser = getCurrentUser();
+  const payments = store.getPayments();
+  const index = payments.findIndex(p => p.id === paymentId);
+
+  if (index === -1) throw new Error('العملية المالية غير موجودة');
+
+  const oldPayment = payments[index];
+  const updatedPayment: Payment = {
+    ...oldPayment,
+    amount: updates.amount !== undefined ? updates.amount : oldPayment.amount,
+    payment_date: updates.payment_date || oldPayment.payment_date,
+    payment_method: updates.payment_method || oldPayment.payment_method,
+    receiving_account_id: updates.receiving_account_id || oldPayment.receiving_account_id,
+    custom_receiving_account:
+      updates.custom_receiving_account !== undefined
+        ? updates.custom_receiving_account.trim()
+        : oldPayment.custom_receiving_account,
+    receipt_url: updates.receipt_url !== undefined ? updates.receipt_url : oldPayment.receipt_url,
+    status: updates.status || oldPayment.status,
+    reversal_reason:
+      updates.reversal_reason !== undefined ? updates.reversal_reason : oldPayment.reversal_reason,
+    updated_at: new Date().toISOString(),
+  };
+
+  payments[index] = updatedPayment;
+  store.savePayments(payments);
+
+  store.addAuditLog({
+    user_id: currentUser?.id,
+    user_name: currentUser?.full_name,
+    action: `تعديل بيانات الدفعة المالية بقيمة ${updatedPayment.amount} EGP`,
+    entity_type: 'PaymentEdit',
+    entity_id: paymentId,
+    old_data: oldPayment,
+    new_data: updatedPayment,
+  });
+
+  return updatedPayment;
 }
 
 export function reversePayment(paymentId: string, reason: string): Payment {
