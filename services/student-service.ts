@@ -37,6 +37,10 @@ export function getGroupStudentsWithDetails(groupId?: string, search?: string): 
     const total_paid = studentPayments.reduce((sum, p) => sum + p.amount, 0);
     const remaining_balance = Math.max(0, gs.course_price - total_paid);
     const payment_status = getPaymentStatus(gs.course_price, total_paid);
+    const receivingAcc = studentPayments[0]?.receiving_account;
+    const receiving_account_number = receivingAcc
+      ? `${receivingAcc.account_number || receivingAcc.account_name}`
+      : '-';
 
     return {
       ...gs,
@@ -45,6 +49,7 @@ export function getGroupStudentsWithDetails(groupId?: string, search?: string): 
       payments: studentPayments,
       total_paid,
       remaining_balance,
+      receiving_account_number,
       payment_status,
     };
   });

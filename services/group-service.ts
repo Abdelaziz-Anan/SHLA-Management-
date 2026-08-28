@@ -150,6 +150,93 @@ export function updateSessionDate(sessionId: string, newDate: string, notes?: st
   return updatedSession;
 }
 
+export function toggleSessionStatus(sessionId: string): GroupSession {
+  const currentUser = getCurrentUser();
+  const sessions = store.getSessions();
+  const index = sessions.findIndex(s => s.id === sessionId);
+
+  if (index === -1) throw new Error('المحاضرة غير موجودة');
+
+  const session = sessions[index];
+  session.status = session.status === 'completed' ? 'scheduled' : 'completed';
+  sessions[index] = session;
+
+  store.saveSessions(sessions);
+
+  store.addAuditLog({
+    user_id: currentUser?.id,
+    user_name: currentUser?.full_name,
+    action: `تغيير حالة حضور المحاضرة رقم ${session.session_number} إلى (${session.status === 'completed' ? 'تم الحضور' : 'لم تتم بعد'})`,
+    entity_type: 'SessionAttendance',
+    entity_id: sessionId,
+  });
+
+  return session;
+}
+
+export function addSessionToGroup(groupId: string, customDate?: string): GroupSession {
+  const currentUser = getCurrentUser();
+  const groupSessions = getGroupSessions(groupId);
+  const nextNumber = groupSessions.length + 1;
+
+  let nextDate = customDate;
+  if (!nextDate) {
+    if (groupSessions.length > 0) {
+      const last = new Date(groupSessions[groupSessions.length - 1].session_date);
+      last.setDate(last.getDate() + 3);
+      nextDate = last.toISOString().split('T')[0];
+    } else {
+      nextDate = new Date().toISOString().split('T')[0];
+    }
+  }
+
+  const newSession: GroupSession = {
+    id: `ses-${groupId}-${Date.now()}`,
+    group_id: groupId,
+    session_number: nextNumber,
+    session_date: nextDate,
+    status: 'scheduled',
+  };
+
+  const allSessions = store.getSessions();
+  store.saveSessions([...allSessions, newSession]);
+
+  // Update group total_sessions
+  const group = getGroupById(groupId);
+  if (group) {
+    updateGroup(groupId, { total_sessions: nextNumber });
+  }
+
+  store.addAuditLog({
+    user_id: currentUser?.id,
+    user_name: currentUser?.full_name,
+    action: `إضافة محاضرة جديدة رقم ${nextNumber} للمجموعة`,
+    entity_type: 'SessionAdd',
+    entity_id: newSession.id,
+  });
+
+  return newSession;
+}
+
+export function deleteSessionFromGroup(sessionId: string): void {
+  const currentUser = getCurrentUser();
+  const sessions = store.getSessions();
+  const session = sessions.find(s => s.id === sessionId);
+
+  if (!session) throw new Error('المحاضرة غير موجودة');
+
+  const filtered = sessions.filter(s => s.id !== sessionId);
+  store.saveSessions(filtered);
+
+  store.addAuditLog({
+    user_id: currentUser?.id,
+    user_name: currentUser?.full_name,
+    action: `حذف المحاضرة رقم ${session.session_number} من المجموعة`,
+    entity_type: 'SessionDelete',
+    entity_id: sessionId,
+  });
+}
+
 export function generateSessionsForGroup(group: Group): GroupSession[] {
   const sessions: GroupSession[] = [];
   const total = group.total_sessions || 8;

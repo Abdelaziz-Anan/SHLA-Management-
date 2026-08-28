@@ -98,6 +98,7 @@ export interface GroupStudent {
   payments?: Payment[];
   total_paid?: number;
   remaining_balance?: number;
+  receiving_account_number?: string;
   payment_status?: 'Not Paid' | 'Partially Paid' | 'Fully Paid' | 'Overpaid';
   created_at: string;
   updated_at: string;
