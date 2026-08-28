@@ -5,6 +5,7 @@ export interface UserProfile {
   full_name: string;
   email: string;
   phone?: string;
+  password?: string;
   role: UserRole;
   is_active: boolean;
   last_login?: string;

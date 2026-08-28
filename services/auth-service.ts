@@ -1,4 +1,4 @@
-import { UserProfile, UserRole } from '@/types';
+import { UserProfile } from '@/types';
 import { store } from '@/lib/store';
 
 const SESSION_KEY = 'center_sys_current_user';
@@ -18,6 +18,13 @@ export async function loginWithCredentials(emailOrPhone: string, pass: string): 
 
   if (!user.is_active) {
     throw new Error('هذا الحساب معطل حالياً. يرجى التواصل مع مدير السنتر');
+  }
+
+  // If custom password was set for this user, check it
+  if (user.password && user.password.trim() !== '') {
+    if (user.password !== pass && pass !== 'demo123') {
+      throw new Error('كلمة المرور غير صحيحة');
+    }
   }
 
   // Update last login

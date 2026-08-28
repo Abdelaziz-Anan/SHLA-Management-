@@ -10,6 +10,7 @@ export function createUser(data: {
   full_name: string;
   email: string;
   phone?: string;
+  password?: string;
   role: UserRole;
 }): UserProfile {
   const currentUser = getCurrentUser();
@@ -25,6 +26,7 @@ export function createUser(data: {
     full_name: data.full_name.trim(),
     email: data.email.trim().toLowerCase(),
     phone: data.phone?.trim(),
+    password: data.password ? data.password.trim() : undefined,
     role: data.role,
     is_active: true,
     created_at: new Date().toISOString(),
@@ -51,6 +53,7 @@ export function updateUserProfile(
     full_name?: string;
     email?: string;
     phone?: string;
+    password?: string;
     role?: UserRole;
   }
 ): UserProfile {
@@ -63,7 +66,11 @@ export function updateUserProfile(
   const oldUser = users[index];
   const updatedUser: UserProfile = {
     ...oldUser,
-    ...updates,
+    full_name: updates.full_name !== undefined ? updates.full_name : oldUser.full_name,
+    email: updates.email !== undefined ? updates.email : oldUser.email,
+    phone: updates.phone !== undefined ? updates.phone : oldUser.phone,
+    password: updates.password && updates.password.trim() !== '' ? updates.password.trim() : oldUser.password,
+    role: updates.role !== undefined ? updates.role : oldUser.role,
     updated_at: new Date().toISOString(),
   };
 
@@ -80,7 +87,7 @@ export function updateUserProfile(
   store.addAuditLog({
     user_id: currentUser?.id,
     user_name: currentUser?.full_name,
-    action: `تعديل بيانات الحساب: ${updatedUser.full_name} (${updatedUser.email})`,
+    action: `تعديل بيانات/كلمة سر الحساب: ${updatedUser.full_name} (${updatedUser.email})`,
     entity_type: 'UserUpdate',
     entity_id: userId,
     old_data: oldUser,
