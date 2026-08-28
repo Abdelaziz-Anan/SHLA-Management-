@@ -4,13 +4,13 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { loginWithCredentials } from '@/services/auth-service';
 import { useLanguage } from '@/lib/language-context';
-import { Lock, User, Eye, EyeOff, AlertCircle, Globe } from 'lucide-react';
+import { Lock, User, Eye, EyeOff, AlertCircle, Globe, ShieldCheck } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const { lang, toggleLang, t } = useLanguage();
-  const [emailOrPhone, setEmailOrPhone] = useState('manager@center.com');
-  const [password, setPassword] = useState('manager123');
+  const [emailOrPhone, setEmailOrPhone] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -32,7 +32,7 @@ export default function LoginPage() {
 
   const handleQuickDemo = (roleEmail: string) => {
     setEmailOrPhone(roleEmail);
-    setPassword('demo123');
+    setPassword('assistant123');
   };
 
   return (
@@ -91,7 +91,7 @@ export default function LoginPage() {
                     required
                     value={emailOrPhone}
                     onChange={(e) => setEmailOrPhone(e.target.value)}
-                    placeholder="manager@center.com"
+                    placeholder="اسم المستخدم أو البريد الإلكتروني..."
                     className="block w-full pr-10 pl-4 py-3 bg-slate-900/90 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   />
                 </div>
@@ -136,30 +136,26 @@ export default function LoginPage() {
               </div>
             </form>
 
-            {/* Quick Demo Selectors */}
+            {/* Quick Demo Selectors (Assistants Only for Security) */}
             <div className="mt-8 pt-6 border-t border-slate-700/60 text-center">
-              <p className="text-xs text-slate-400 mb-3 font-semibold">{t('اختصارات الدخول السريع:', 'Quick Demo Sign In:')}</p>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemo('manager@center.com')}
-                  className="px-2.5 py-2 bg-slate-900/80 hover:bg-purple-950/40 text-purple-300 border border-purple-800/40 rounded-xl text-xs font-semibold transition-colors"
-                >
-                  د / سمر (Manager)
-                </button>
+              <p className="text-xs text-slate-400 mb-3 font-semibold flex items-center justify-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>{t('اختصارات دخول تجربة المساعدين فقط:', 'Assistants Demo Sign In:')}</span>
+              </p>
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => handleQuickDemo('assistant1@center.com')}
-                  className="px-2.5 py-2 bg-slate-900/80 hover:bg-cyan-950/40 text-cyan-300 border border-cyan-800/40 rounded-xl text-xs font-semibold transition-colors"
+                  className="px-3 py-2 bg-slate-900/80 hover:bg-cyan-950/40 text-cyan-300 border border-cyan-800/40 rounded-xl text-xs font-semibold transition-colors"
                 >
-                  مساعد 1
+                  مساعد 1 (Assistant 1)
                 </button>
                 <button
                   type="button"
                   onClick={() => handleQuickDemo('assistant2@center.com')}
-                  className="px-2.5 py-2 bg-slate-900/80 hover:bg-cyan-950/40 text-cyan-300 border border-cyan-800/40 rounded-xl text-xs font-semibold transition-colors"
+                  className="px-3 py-2 bg-slate-900/80 hover:bg-cyan-950/40 text-cyan-300 border border-cyan-800/40 rounded-xl text-xs font-semibold transition-colors"
                 >
-                  مساعد 2
+                  مساعد 2 (Assistant 2)
                 </button>
               </div>
             </div>
