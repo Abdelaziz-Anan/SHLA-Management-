@@ -1,0 +1,1180 @@
+English Center Management System
+Complete Technical & Functional Specification
+I want you to build a complete professional web-based management system for an English language center.
+The current center manages student groups, payments, attendance/session dates, and receipts manually on paper.
+The goal is to completely replace the paper-based workflow with a modern, secure, responsive, mobile-first management system that can be accessed from Android phones, iPhones, tablets, and laptops through a web URL.
+This must be a real full-stack production-ready application.
+It must include:
+Frontend
+Backend
+PostgreSQL Database
+Authentication
+Role-Based Access Control
+User Management
+File/Image Storage
+Groups Management
+Students Management
+Payments
+Payment Receipts
+Financial Management
+Reports
+Audit Logs
+Center Branding
+Responsive Mobile UI
+PWA support
+1. IMPORTANT: AUTHENTICATION AND SECURITY
+This system must NOT be publicly accessible just because someone knows the URL.
+The application must have a secure Login page.
+Nobody should be able to access the dashboard or any internal page without successfully logging in.
+The system must support:
+Username/email
+Password
+Secure authentication
+Session management
+Protected routes
+Role-based permissions
+Logout
+Password change/reset
+Account activation/deactivation
+The system must use real authentication.
+Do NOT create a fake frontend-only login.
+Do NOT store passwords in plain text.
+Use Supabase Auth or another secure authentication mechanism.
+2. INITIAL USER ACCOUNTS
+Initially, the system will have exactly 3 accounts:
+Account 1 — Manager
+Role:
+manager
+This account belongs to the center manager.
+Account 2 — Assistant 1
+Role:
+assistant
+Account 3 — Assistant 2
+Role:
+assistant
+These are the initial accounts.
+However, DO NOT hard-code these accounts directly inside the source code.
+Store users in the database/authentication system.
+The manager should be able to manage users later.
+3. USER TABLE / PROFILE
+Create a proper users/profile structure.
+Recommended information:
+id
+full_name
+username or email
+phone
+role
+is_active
+created_at
+updated_at
+last_login
+Roles:
+manager
+assistant
+If Supabase Auth is used, use Supabase Auth for authentication and a separate profile/user table for application-specific information and roles.
+4. MANAGER PERMISSIONS
+The Manager has full access to the system.
+The Manager can:
+View Dashboard
+View all Groups
+Create Groups
+Edit Groups
+Archive Groups
+Delete/archive appropriate records
+Add Students
+Edit Students
+Transfer Students
+Record Payments
+Upload Receipts
+View Payment History
+View Financial Management
+View Monthly Reports
+View Group Reports
+View Student Reports
+View Outstanding Payments
+Record Manager Settlements
+View Settlement History
+Manage Users
+Add Assistants
+Edit Assistants
+Disable Assistants
+Change Assistant permissions
+Manage Center Settings
+Upload Center Logo
+Upload Cover/Banner
+Change Center Information
+View Audit Logs
+The Manager should have full access unless a specific restriction is intentionally implemented.
+5. ASSISTANT PERMISSIONS
+Assistants should have limited access.
+By default, an Assistant can:
+Login
+View Dashboard
+View Groups
+Search Groups
+View Group Details
+Add Students
+Edit permitted Student information
+Record Payments
+Upload Payment Receipts
+View Student Payment History
+View permitted financial information
+View session schedules
+Assistants should NOT have access to:
+User Management
+Creating/deleting Manager accounts
+Changing Manager credentials
+Changing their own role
+Changing another user's role
+System Settings
+Center Branding
+Database configuration
+Security settings
+Deleting important financial records
+Permanently deleting financial transactions
+Modifying audit logs
+Financial permissions should be configurable by the Manager.
+6. PERMISSION SYSTEM
+Do NOT rely only on hiding buttons in the frontend.
+Security must be enforced at the backend/database level.
+For example:
+If an Assistant manually tries to access:
+/settings
+the backend must reject the request.
+If an Assistant manually tries to access:
+/users
+the backend must reject the request.
+If an Assistant sends a direct API request attempting to delete a financial transaction, the backend/database must reject it.
+Frontend visibility is NOT a security mechanism.
+Implement proper:
+Authentication
+Authorization
+Route protection
+Server-side validation
+Database Row Level Security
+7. USER MANAGEMENT PAGE
+Only the Manager can access:
+Users
+The Manager should see:
+User
+Role
+Status
+Last Login
+Actions
+Manager
+Manager
+Active
+...
+Edit
+Assistant 1
+Assistant
+Active
+...
+Edit
+Assistant 2
+Assistant
+Active
+...
+Edit
+Manager actions:
+Add User
+Edit User
+Activate User
+Disable User
+Change Permissions
+Reset Password/access
+Do NOT allow deleting the only Manager account.
+There must always be at least one active Manager.
+8. LOGIN PAGE
+Create a professional login page.
+Display:
+Center Logo
+Center Name
+Username/Email
+Password
+Login Button
+Forgot Password
+Show/Hide Password
+Example layout:
+CENTER LOGO
+English CenterManagement System
+Username / Email
+[________________]
+Password
+[________________]
+[ Login ]
+The page must be optimized for mobile.
+9. LOGIN BEHAVIOR
+If credentials are correct:
+Redirect to:
+/dashboard
+If credentials are incorrect:
+Show a professional error:
+"Invalid username or password."
+Do not reveal whether the username exists.
+After logout:
+The user must not be able to return to protected pages using the browser Back button without authenticating again.
+10. PROTECTED ROUTES
+All internal pages must require authentication.
+Protected pages include:
+/dashboard
+/groups
+/groups/[id]
+/students
+/students/[id]
+/payments
+/finance
+/reports
+/users
+/settings
+/audit-log
+If a user is not authenticated:
+Redirect to:
+/login
+If an Assistant tries to access a Manager-only page:
+Return an authorization error or redirect appropriately.
+11. SESSION MANAGEMENT
+Use secure authentication sessions.
+The system should:
+Keep the user logged in securely.
+Support logout.
+Expire sessions appropriately.
+Protect authentication cookies/tokens.
+Never store raw passwords.
+Never expose authentication secrets in frontend code.
+12. PASSWORD SECURITY
+Passwords must never be stored as plain text.
+Use Supabase Auth or an equivalent secure authentication provider.
+The Manager should be able to reset assistant access.
+The user should be able to change their own password if permitted.
+13. MOBILE FIRST
+The system will mainly be used from mobile phones.
+Therefore:
+Design Mobile First.
+Android compatible.
+iPhone compatible.
+Tablet compatible.
+Desktop compatible.
+Large touch-friendly buttons.
+Responsive tables.
+Mobile cards when necessary.
+No tiny text.
+No unnecessary horizontal scrolling.
+The application should feel like a professional mobile management application.
+14. PWA
+Make the application a Progressive Web App.
+Users should be able to:
+Open the system through a URL.
+Add it to their phone Home Screen.
+Open it like an application.
+Include:
+PWA manifest
+App icon
+Proper metadata
+Mobile responsive layout
+Loading screen
+15. MAIN NAVIGATION
+Create:
+Dashboard
+Groups
+Students
+Financial Management
+Reports
+Users — Manager only
+Settings — Manager only
+Mobile navigation should use a hamburger menu or another appropriate mobile navigation pattern.
+16. DASHBOARD
+After login, display a professional dashboard.
+Show:
+Total Active Groups
+Total Students
+Active Students
+Total Collected This Month
+Received by Manager
+Remaining with Center/Assistants
+Total Outstanding Student Payments
+Upcoming Sessions
+Recent Payments
+Recent Activity
+The exact dashboard information can depend on the user's role.
+17. GROUP MANAGEMENT
+Create a complete Groups module.
+Each group should contain:
+Group Number
+Course Name
+Level
+Trainer
+Start Date
+End Date
+Days
+Start Time
+End Time
+Number of Sessions
+Course Price
+Status
+Notes
+Example:
+Group Number:291
+Course:E.Faculty
+Level:1
+Trainer:Dr. Samar
+Schedule:Sunday - Wednesday
+Time:7:00 PM - 8:30 PM
+18. GROUP SEARCH
+At the top of Groups page create a powerful search/filter.
+Main search:
+Group Number
+Days
+Time
+Example:
+291
+Sunday - Wednesday
+7:00 PM - 8:30 PM
+Filters:
+Group Number
+Course
+Level
+Trainer
+Day
+Time
+Status
+Start Date
+End Date
+19. CREATE GROUP
+Form:
+Group Number
+Course Name
+Level
+Trainer
+Start Date
+End Date
+Days
+Start Time
+End Time
+Total Sessions
+Course Price
+Notes
+Allow multiple days.
+Example:
+SundayWednesday
+Display:
+Sunday - Wednesday
+20. EDIT GROUP DATES
+Authorized users can change:
+Start Date
+End Date
+Days
+Time
+Individual Session Dates
+Do NOT destroy historical data.
+Record important changes in the Audit Log.
+21. GROUP DETAILS PAGE
+Each group must have a dedicated page.
+Show:
+Group Information
+Group Number
+Course
+Level
+Trainer
+Days
+Time
+Start Date
+End Date
+Course Price
+Number of Students
+Status
+Buttons:
+Edit Group
+Add Student
+Archive Group
+22. SESSION SCHEDULE
+Every group must have a small session schedule.
+Columns:
+Session
+Date
+1st Session
+01/08/2026
+2nd Session
+05/08/2026
+3rd Session
+08/08/2026
+Automatically generate:
+1st Session2nd Session3rd Session4th Sessionetc.
+The Manager/authorized user can edit session dates.
+23. STUDENTS TABLE
+Inside every group, show students.
+Columns:
+Student Name
+Phone Number
+Booking Date
+Booking Method
+Payment Destination
+Payment Destination Number
+Amount Paid
+Remaining
+Receipt
+Status
+Notes
+Actions
+On mobile, transform rows into cards when necessary.
+24. PROFESSIONAL PAYMENT DESTINATION FIELD
+The paper currently contains the number/account that the student transferred money to.
+Do NOT call the field:
+"الرقم اللي اتحول عليه"
+Use a professional name:
+Payment Destination
+and:
+Receiving Account Number
+Examples:
+Payment Destination:Manager Wallet
+Receiving Account Number:01XXXXXXXXX
+Other examples:
+Center Wallet
+Bank Account
+InstaPay
+Vodafone Cash
+25. PAYMENT METHOD
+Dropdown:
+Cash
+Vodafone Cash
+InstaPay
+Bank Transfer
+Other
+26. PAYMENT RECEIPTS
+This is a critical feature.
+Every payment transaction can have its own receipt.
+The user must be able to upload:
+Image
+PDF
+From mobile:
+Camera
+Gallery
+Files
+The system must allow:
+Upload
+Preview
+Replace
+Delete if authorized
+Download/open
+Receipts must be stored in secure Supabase Storage.
+Do NOT store binary image data directly in PostgreSQL.
+27. MULTIPLE PAYMENTS PER STUDENT
+Do NOT assume one student makes one payment.
+A student may pay multiple times.
+Example:
+Payment #1:500 EGP
+Payment #2:1000 EGP
+Payment #3:1500 EGP
+Each payment must have:
+Amount
+Date
+Payment Method
+Receiving Account
+Receipt
+Created By
+Notes
+28. STUDENT PROFILE
+Student profile:
+Full Name
+Phone
+Current Group
+Booking Date
+Course Price
+Total Paid
+Remaining
+Payment History
+Receipts
+Notes
+29. PAYMENT STATUS
+Automatically calculate:
+Not Paid
+Partially Paid
+Fully Paid
+Overpaid
+Formula:
+Remaining =Course Price - Total Valid Payments
+Do not manually type the remaining amount.
+30. IMPORTANT FINANCIAL DISTINCTION
+The system must distinguish between:
+Student Remaining
+Money that the student still owes.
+AND:
+Money Remaining With Center/Assistants
+Money that has already been collected from students but has not yet been delivered to the Manager.
+These are completely different concepts.
+Do not mix them.
+31. FINANCIAL MANAGEMENT
+Create a separate Financial Management section.
+Track:
+Received by Manager
+Money that students paid directly to the Manager's account/wallet.
+Received by Center/Assistants
+Money collected by assistants/center accounts.
+Total Collected
+Automatically calculated.
+Formula:
+Total Collected =Manager Received+Center/Assistant Received
+32. FINANCIAL TRANSACTIONS
+Do NOT create editable total fields only.
+Every payment must be a transaction.
+Each transaction contains:
+Transaction ID
+Student
+Group
+Amount
+Date
+Payment Method
+Payment Destination
+Receiving Account Number
+Receipt
+Created By
+Notes
+33. MANAGER SETTLEMENTS
+Create a settlement mechanism.
+Example:
+Center/Assistants collected:
+5000 EGP
+Manager received:
+3000 EGP
+Remaining:
+2000 EGP
+Create a settlement transaction:
+Settlement ID
+Amount
+Date
+Delivered By
+Received By
+Notes
+Optional proof/receipt
+The system automatically calculates the remaining amount.
+34. MONTHLY FINANCIAL REPORT
+Manager can select:
+August 2026
+Show:
+Total CollectedReceived by ManagerReceived by Center/AssistantsTotal Settled to ManagerRemaining With Center/AssistantsNumber of PaymentsNumber of StudentsNumber of Groups
+Also show detailed transactions.
+35. FINANCIAL FILTERS
+Filters:
+Date
+Month
+Group
+Student
+Payment Method
+Receiving Account
+Created By
+Transaction Type
+36. REPORTS
+Create:
+Monthly Revenue Report
+Group Revenue Report
+Student Payment Report
+Outstanding Payments Report
+Manager Settlement Report
+37. OUTSTANDING PAYMENTS
+Show:
+Student
+Group
+Course Price
+Paid
+Remaining
+Phone
+Last Payment
+Sort by highest remaining.
+38. EXPORT
+Allow Manager to export:
+CSV
+Excel
+PDF
+PDF reports should contain:
+Center Logo
+Center Name
+Report Name
+Date
+Financial information
+Professional formatting
+39. CENTER BRANDING
+Manager-only Settings.
+Allow upload:
+Center Logo
+Center Cover/Banner
+Center Name
+Phone
+Address
+Social Media Links
+Branding should appear in:
+Login
+Dashboard
+Sidebar
+Reports
+PDFs
+40. DATABASE
+Use PostgreSQL.
+Recommended tables:
+profiles
+id
+full_name
+username/email
+phone
+role
+is_active
+created_at
+updated_at
+last_login
+centers
+id
+name
+logo_url
+cover_url
+phone
+address
+created_at
+updated_at
+groups
+id
+center_id
+group_number
+course_name
+level
+trainer_name
+start_date
+end_date
+start_time
+end_time
+course_price
+status
+notes
+created_by
+created_at
+updated_at
+group_days
+id
+group_id
+day_of_week
+sessions
+id
+group_id
+session_number
+session_date
+status
+notes
+created_at
+updated_at
+students
+id
+center_id
+full_name
+phone
+notes
+created_at
+updated_at
+group_students
+id
+group_id
+student_id
+booking_date
+booking_method
+course_price
+status
+notes
+created_at
+updated_at
+payment_accounts
+id
+center_id
+account_name
+account_type
+account_number
+owner_type
+is_active
+Examples:
+Manager WalletCenter WalletBank Account
+payments
+id
+student_id
+group_id
+amount
+payment_date
+payment_method
+receiving_account_id
+receipt_url
+created_by
+notes
+created_at
+updated_at
+settlements
+id
+center_id
+amount
+settlement_date
+delivered_by
+received_by
+notes
+proof_url
+created_at
+audit_logs
+id
+user_id
+action
+entity_type
+entity_id
+old_data
+new_data
+created_at
+settings
+id
+center_id
+key
+value
+41. DATABASE SECURITY
+Use:
+Foreign Keys
+Indexes
+Row Level Security
+Secure policies
+Server-side validation
+Important:
+Manager can access everything.
+Assistant can only access permitted records/actions.
+Do not depend on frontend hiding.
+42. AUDIT LOG
+Record:
+Login
+Logout if useful
+Student added
+Student edited
+Payment added
+Payment edited
+Receipt uploaded
+Receipt deleted
+Group created
+Group edited
+Group date changed
+Settlement added
+User created
+User disabled
+Permission changed
+Each record should contain:
+User
+Action
+Entity
+Old Value
+New Value
+Date/Time
+Assistants must NOT be able to edit/delete audit logs.
+43. FINANCIAL CORRECTIONS
+Never silently delete important financial transactions.
+If an incorrect payment is entered:
+Use a reversal/correction mechanism.
+Example:
+Original:1000 EGP
+Mark it:
+Reversed
+Then create the corrected transaction.
+This preserves the financial history.
+44. DUPLICATE STUDENTS
+When entering a new student:
+Check phone number.
+If an existing student has the same phone number:
+Show:
+"Student may already exist."
+Allow the user to select the existing student.
+45. STUDENT TRANSFER
+Allow authorized users to transfer a student between groups.
+Record:
+Previous Group
+New Group
+Transfer Date
+User
+Reason
+Do not destroy payment history.
+46. USER PERMISSION MODEL
+Start with:
+Manager
+Full permissions.
+Assistant
+Default permissions:
+view_dashboard
+view_groups
+create_students
+edit_students
+create_payments
+upload_receipts
+view_sessions
+Optional financial permissions can be controlled by Manager.
+Design permissions so they can be expanded later.
+47. UI DESIGN
+The interface must look like a real SaaS management application.
+Use:
+Modern cards
+Clean tables
+Professional typography
+Status badges
+Toast notifications
+Confirmation dialogs
+Loading states
+Empty states
+Error states
+Responsive layout
+Avoid:
+Excessive animations
+Excessive gradients
+Clutter
+Tiny buttons
+Spreadsheet-like appearance
+48. MOBILE GROUP CARD
+Example:
+Group #291
+E.FacultyLevel 1
+Dr. Samar
+Sunday - Wednesday7:00 PM - 8:30 PM
+01/08/2026 → 29/09/2026
+Students: 18
+[Open Group]
+49. MOBILE STUDENT CARD
+Example:
+Ahmed Ali
+01XXXXXXXXX
+Paid:1,000 EGP
+Remaining:2,000 EGP
+Payment:Vodafone Cash
+Destination:Manager Wallet
+Receipt:[View Receipt]
+Actions:[View][Edit][Add Payment]
+50. QUICK ACTIONS
+Dashboard:
+New Group
+Add Student
+Add Payment
+Upload Receipt
+View Reports
+51. TECHNOLOGY STACK
+Use:
+Frontend:Next.jsTypeScriptReact
+UI:Tailwind CSSshadcn/ui
+Backend:Next.js Server Actions/API Routes
+Database:Supabase PostgreSQL
+Authentication:Supabase Auth
+Storage:Supabase Storage
+Deployment:Vercel
+Validation:Zod
+Forms:React Hook Form
+Charts:Recharts
+52. CODE ARCHITECTURE
+Do not put the whole application in one file.
+Use a clean structure:
+app
+components
+lib
+services
+types
+schemas
+database
+auth
+storage
+reports
+hooks
+Separate:
+UI
+Business Logic
+Database Logic
+Authentication
+Financial Calculations
+53. FINANCIAL LOGIC
+Centralize financial calculations.
+For each student:
+Total Paid =SUM(valid payments)
+Remaining =Course Price - Total Paid
+For the center:
+Total Collected =SUM(valid payments)
+Manager Received =SUM(valid payments where destination owner = Manager)
+Center/Assistant Received =SUM(valid payments where destination owner = Center)
+Remaining With Center =Center/Assistant Collected
+Settlements Delivered to Manager
+54. EXAMPLE
+Student A:
+Course Price:3000 EGP
+Paid:1000 EGP to Manager
+Student B:
+Course Price:3000 EGP
+Paid:1500 EGP to Center
+Results:
+Total Collected:2500 EGP
+Manager Received:1000 EGP
+Center Received:1500 EGP
+Student A Remaining:2000 EGP
+Student B Remaining:1500 EGP
+These must be calculated automatically.
+55. IMPORTANT: PAYMENT DESTINATION
+For every payment, the user must select:
+Who received the money?
+Options:
+Manager
+Center / Assistant
+Other
+The selected destination determines how the payment appears in financial reports.
+56. RECEIPT RELATIONSHIP
+Every payment can have its own receipt.
+Example:
+Payment 1 → Receipt 1
+Payment 2 → Receipt 2
+Payment 3 → Receipt 3
+Never attach only one receipt to the entire student.
+57. ERROR HANDLING
+Create proper error handling.
+Do not expose raw database errors.
+Show user-friendly messages.
+Example:
+"Unable to save payment. Please try again."
+Log technical details securely for developers.
+58. LOADING STATES
+Show loading states:
+Loading groups...
+Saving student...
+Recording payment...
+Uploading receipt...
+Generating report...
+59. EMPTY STATES
+Examples:
+No groups found.
+No students found.
+No payments found.
+No receipt uploaded.
+No financial transactions found.
+60. DATA SECURITY
+Never expose:
+Database service keys
+Authentication secrets
+Private receipt URLs
+Passwords
+Sensitive configuration
+Use environment variables.
+Use secure storage policies.
+Use authenticated access/signed URLs for private receipts.
+61. DEPLOYMENT
+The system should be deployable using:
+Supabase:
+Database
+Auth
+Storage
+Vercel:
+Application hosting
+The system should have a permanent URL such as:
+https://center-name.vercel.app
+Do not hard-code the domain.
+The application must later support a custom domain.
+62. FREE / LOW-COST DEPLOYMENT
+Design the system so it can initially run on free tiers where possible.
+Expected initial architecture:
+Vercel Free+Supabase Free
+No paid server should be required for the initial version.
+The system should not depend on a paid service unless necessary.
+A custom domain can be added later.
+63. CENTER BRANDING
+Do not hard-code:
+Center nameLogoPhoneAddress
+All branding must come from the database/settings.
+This makes the system reusable.
+64. DEMO DATA
+Create demo/seed data based on the paper workflow shown in the provided image.
+Example:
+Group:291
+Course:E.Faculty
+Level:1
+Trainer:Dr. Samar
+Schedule:Sunday - Wednesday7:00 PM - 8:30 PM
+Use fictional student names and phone numbers.
+Do NOT copy or hard-code private personal information from the uploaded paper into production/demo data.
+65. DEVELOPMENT PHASES
+Build the system in phases.
+Phase 1 — Project Setup
+Next.js
+TypeScript
+Tailwind
+shadcn/ui
+Supabase
+Environment variables
+Phase 2 — Authentication
+Login
+Logout
+Protected routes
+Manager role
+Assistant role
+Session handling
+Phase 3 — Database
+Schema
+Relationships
+Indexes
+RLS
+Migrations
+Phase 4 — User Management
+Manager
+Assistant 1
+Assistant 2
+User management
+Permissions
+Phase 5 — Groups
+Create
+Edit
+Search
+Filters
+Archive
+Details
+Phase 6 — Sessions
+Generate sessions
+Edit dates
+Session schedule
+Phase 7 — Students
+Add
+Edit
+Search
+Student profile
+Group membership
+Transfer
+Phase 8 — Payments
+Payment transactions
+Multiple payments
+Payment methods
+Payment destinations
+Remaining calculations
+Phase 9 — Receipts
+Upload
+Storage
+Preview
+Secure access
+Replacement
+Phase 10 — Finance
+Manager received
+Center received
+Settlements
+Remaining balance
+Phase 11 — Reports
+Monthly
+Group
+Student
+Outstanding payments
+Settlements
+PDF/Excel/CSV
+Phase 12 — Branding
+Logo
+Cover
+Center information
+Phase 13 — PWA
+Manifest
+Icons
+Mobile optimization
+Phase 14 — Testing
+Test:
+Authentication
+Permissions
+Groups
+Students
+Payments
+Receipts
+Finance
+Reports
+Mobile
+Phase 15 — Deployment
+Production Supabase
+Vercel
+Environment variables
+Production build
+Final security testing
+66. TESTING REQUIREMENTS
+Test Manager:
+Can login
+Can access all permitted pages
+Can manage users
+Can manage settings
+Can view finance
+Can view reports
+Test Assistant:
+Can login
+Can view allowed pages
+Can add students
+Can add payments
+Can upload receipts
+Cannot access Manager-only pages
+Cannot modify unauthorized financial data
+Cannot modify users
+Cannot modify settings
+Cannot modify audit logs
+Test unauthenticated user:
+Cannot access dashboard
+Cannot access groups
+Cannot access finance
+Cannot access reports
+Cannot access users
+Cannot access settings
+67. FINAL ACCEPTANCE CRITERIA
+The system is complete only when:
+The system has a secure Login page.
+Exactly 3 initial accounts exist:
+1 Manager
+2 Assistants
+Each account has separate credentials.
+Users are stored securely and NOT hard-coded.
+Manager has full access.
+Assistants have limited access.
+Role permissions are enforced on the backend/database.
+Unauthenticated users cannot access internal pages.
+Assistants cannot access Manager-only pages.
+Manager can manage assistant accounts.
+Manager can disable an assistant.
+Manager can change assistant permissions.
+Groups can be created.
+Groups can be edited.
+Groups can be searched by number and schedule.
+Every group has a details page.
+Every group has a session/date table.
+Students can be added.
+Students can have multiple payments.
+Every payment can have its own receipt.
+Receipts can be uploaded from mobile camera/gallery.
+Receipts are stored securely.
+Student remaining balance is automatic.
+Manager and Center/Assistant money are separated.
+Total collected is automatic.
+Settlements to Manager are tracked.
+Monthly financial reports are available.
+Financial history cannot silently disappear.
+Audit logs exist.
+Center logo can be uploaded.
+Center branding can be changed.
+The application is responsive.
+Android works.
+iPhone works.
+Desktop works.
+PWA works.
+The application can be deployed on Vercel.
+Database/Auth/Storage use Supabase.
+The application can initially operate on free tiers where possible.
+The system can later use a custom domain.
+68. FINAL IMPORTANT INSTRUCTION
+Treat this as a real production management system, not a demo CRUD project.
+Security and financial accuracy are extremely important.
+Do NOT:
+Create a fake frontend login.
+Hard-code passwords.
+Store passwords as plain text.
+Store important data only in localStorage.
+Hide security-sensitive buttons without backend authorization.
+Store receipts directly inside database rows as binary data.
+Make private receipts publicly accessible.
+Use editable financial totals instead of transaction records.
+Allow silent deletion of financial history.
+Mix student outstanding balance with center cash balance.
+Hard-code center branding.
+Hard-code real private student information.
+Use:
+Real authentication
+Real role-based authorization
+Supabase Auth
+PostgreSQL
+Row Level Security
+Secure Storage
+Proper financial transactions
+Audit Logs
+Server-side validation
+Mobile-first responsive design
+Clean architecture
+The final result should look and behave like a professional English Center Management SaaS application.
