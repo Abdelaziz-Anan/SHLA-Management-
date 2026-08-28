@@ -186,6 +186,8 @@ export function updateStudentEnrollmentDetails(
     booking_method?: BookingMethod;
     receiving_account_id?: string;
     custom_receiving_account?: string;
+    paid_amount?: number;
+    course_price?: number;
   }
 ): void {
   const currentUser = getCurrentUser();
@@ -216,29 +218,62 @@ export function updateStudentEnrollmentDetails(
   if (updates.custom_receiving_account !== undefined) {
     gs.custom_receiving_account = updates.custom_receiving_account.trim();
   }
+  if (updates.course_price !== undefined && updates.course_price >= 0) {
+    gs.course_price = updates.course_price;
+  }
   gs.updated_at = new Date().toISOString();
 
   groupStudents[index] = gs;
   store.saveGroupStudents(groupStudents);
 
-  // 3. Update Payments receiving account / custom account if provided
+  // 3. Update Payments & Paid Amount if provided
   const payments = store.getPayments();
   const studentPayments = payments.filter(p => p.group_student_id === groupStudentId && p.status === 'valid');
-  studentPayments.forEach(p => {
-    if (updates.receiving_account_id) {
-      p.receiving_account_id = updates.receiving_account_id;
+
+  if (updates.paid_amount !== undefined && updates.paid_amount >= 0) {
+    if (studentPayments.length > 0) {
+      // Update primary payment amount
+      const primary = studentPayments[0];
+      primary.amount = updates.paid_amount;
+      if (updates.receiving_account_id) primary.receiving_account_id = updates.receiving_account_id;
+      if (updates.custom_receiving_account !== undefined) primary.custom_receiving_account = updates.custom_receiving_account.trim();
+      primary.updated_at = new Date().toISOString();
+    } else if (updates.paid_amount > 0) {
+      // Create a new payment record
+      const newPay: Payment = {
+        id: `pay-${Date.now()}`,
+        group_student_id: groupStudentId,
+        amount: updates.paid_amount,
+        payment_date: updates.booking_date || new Date().toISOString().split('T')[0],
+        payment_method: updates.booking_method === 'V.cash' ? 'Vodafone Cash' : 'Cash',
+        receiving_account_id: updates.receiving_account_id || 'acc-center-cash',
+        custom_receiving_account: updates.custom_receiving_account?.trim(),
+        created_by: currentUser?.id,
+        status: 'valid',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      payments.unshift(newPay);
     }
-    if (updates.custom_receiving_account !== undefined) {
-      p.custom_receiving_account = updates.custom_receiving_account.trim();
-    }
-    p.updated_at = new Date().toISOString();
-  });
+  } else {
+    // Just update receiving accounts
+    studentPayments.forEach(p => {
+      if (updates.receiving_account_id) {
+        p.receiving_account_id = updates.receiving_account_id;
+      }
+      if (updates.custom_receiving_account !== undefined) {
+        p.custom_receiving_account = updates.custom_receiving_account.trim();
+      }
+      p.updated_at = new Date().toISOString();
+    });
+  }
+
   store.savePayments(payments);
 
   store.addAuditLog({
     user_id: currentUser?.id,
     user_name: currentUser?.full_name,
-    action: `تعديل بيانات سطر الطالب والتحويلات المكتملة`,
+    action: `تعديل بيانات سطر الطالب والمبالغ والتحويلات المكتملة`,
     entity_type: 'StudentEnrollmentEdit',
     entity_id: groupStudentId,
   });

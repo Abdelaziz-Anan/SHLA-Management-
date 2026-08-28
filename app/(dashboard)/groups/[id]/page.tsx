@@ -14,7 +14,7 @@ import {
 import { getGroupStudentsWithDetails, updateStudentEnrollmentDetails } from '@/services/student-service';
 import { updatePaymentReceipt } from '@/services/payment-service';
 import { Group, GroupSession, GroupStudent, BookingMethod, Payment } from '@/types';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { formatCurrency, formatDate, getPaymentStatus } from '@/lib/utils';
 import { StatusBadge } from '@/components/StatusBadge';
 import { ReceiptModal } from '@/components/ReceiptModal';
 import { useLanguage } from '@/lib/language-context';
@@ -32,9 +32,9 @@ import {
   CreditCard,
   X,
   Users2,
-  Camera,
   FileImage,
   Upload,
+  Coins,
 } from 'lucide-react';
 
 export default function GroupDetailsPage() {
@@ -60,6 +60,8 @@ export default function GroupDetailsPage() {
   const [editBookingMethod, setEditBookingMethod] = useState<BookingMethod>('Center');
   const [accountTypeOption, setAccountTypeOption] = useState<'center_desk' | 'custom'>('center_desk');
   const [customWalletNumber, setCustomWalletNumber] = useState('');
+  const [editPaidAmount, setEditPaidAmount] = useState<number>(0);
+  const [editCoursePrice, setEditCoursePrice] = useState<number>(540);
   const [editError, setEditError] = useState('');
 
   const loadData = () => {
@@ -117,7 +119,6 @@ export default function GroupDetailsPage() {
   const handleOpenReceipt = (gs: GroupStudent) => {
     let firstPay = gs.payments?.[0];
     if (!firstPay) {
-      // Create a virtual payment placeholder for receipt upload if no payment exists
       firstPay = {
         id: `pay-receipt-${gs.id}`,
         group_student_id: gs.id,
@@ -151,6 +152,8 @@ export default function GroupDetailsPage() {
     setEditPhone(gs.student?.phone || '');
     setEditBookingDate(gs.booking_date || '');
     setEditBookingMethod(gs.booking_method || 'Center');
+    setEditPaidAmount(gs.total_paid || 0);
+    setEditCoursePrice(gs.course_price || 540);
 
     const currentAccNum = gs.receiving_account_number || '';
     if (currentAccNum === 'Center Desk' || currentAccNum === 'Center Desk Cash' || currentAccNum.includes('خزينة')) {
@@ -196,15 +199,21 @@ export default function GroupDetailsPage() {
         booking_method: editBookingMethod,
         receiving_account_id: finalReceivingAccId,
         custom_receiving_account: finalCustomAcc,
+        paid_amount: Number(editPaidAmount) || 0,
+        course_price: Number(editCoursePrice) || 540,
       });
 
       setEditingRowStudent(null);
       loadData();
-      alert('تم تعديل بيانات السطر بنجاح');
+      alert('تم تعديل بيانات السطر والمبالغ المالية بنجاح');
     } catch (err: any) {
       setEditError(err.message || 'فشل تعديل البيانات');
     }
   };
+
+  // Live calculations for Edit Row modal
+  const liveRemaining = Math.max(0, (editCoursePrice || 540) - (editPaidAmount || 0));
+  const liveStatus = getPaymentStatus(editCoursePrice || 540, editPaidAmount || 0);
 
   if (!group) {
     return (
@@ -385,7 +394,7 @@ export default function GroupDetailsPage() {
         </div>
       </div>
 
-      {/* ENROLLED STUDENTS TABLE (مع إضافة عمود إيصال التحويل ورقم المحفظة الحر!) */}
+      {/* ENROLLED STUDENTS TABLE */}
       <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <div>
@@ -394,7 +403,7 @@ export default function GroupDetailsPage() {
               <span>{t('طلاب المجموعة', 'Enrolled Students')} ({students.length})</span>
             </h2>
             <p className="text-xs text-slate-400 font-medium mt-0.5">
-              {t('إمكانية رفع/معاينة الإيصال مباشرة، وتعديل أي رقم محفظة بحرية', 'Direct receipt upload/viewing and full wallet number customization')}
+              {t('إمكانية تعديل اسم الطالب، الهاتف، المحفظة، المبالغ المدفوعة، والمتبقي بنفس اللحظة', 'Full control to edit student name, phone, wallet, paid amount, and remaining balance')}
             </p>
           </div>
         </div>
@@ -433,12 +442,10 @@ export default function GroupDetailsPage() {
                       <td className="p-4 text-slate-500">{formatDate(gs.booking_date)}</td>
                       <td className="p-4 font-bold text-slate-800">{gs.booking_method}</td>
                       
-                      {/* Receiving Account / Custom Wallet Column */}
                       <td className="p-4 font-extrabold text-purple-700" dir="ltr">
                         {gs.receiving_account_number || '-'}
                       </td>
 
-                      {/* Receipt Upload / View Column */}
                       <td className="p-4 text-center">
                         <button
                           onClick={() => handleOpenReceipt(gs)}
@@ -471,10 +478,10 @@ export default function GroupDetailsPage() {
                         <button
                           onClick={() => handleOpenRowEdit(gs)}
                           className="px-2.5 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 font-bold rounded-lg transition-colors border border-purple-200 flex items-center gap-1"
-                          title={t('تعديل كل بيانات هذا السطر', 'Edit this student row')}
+                          title={t('تعديل كل بيانات هذا السطر والمبالغ', 'Edit row details & paid amount')}
                         >
                           <Edit2 className="w-3.5 h-3.5" />
-                          <span>{t('تعديل السطر', 'Edit Row')}</span>
+                          <span>{t('تعديل السطر والمبالغ', 'Edit Row & Amounts')}</span>
                         </button>
 
                         <Link
@@ -494,14 +501,14 @@ export default function GroupDetailsPage() {
         </div>
       </div>
 
-      {/* EDIT ROW MODAL (مع الخيار الحر لكتابة أي رقم محفظة!) */}
+      {/* EDIT ROW MODAL (مع تعديل المبلغ المدفوع والمتبقي والحالة المالية!) */}
       {editingRowStudent && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-in fade-in duration-200 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 sticky top-0 bg-white z-10">
               <h3 className="font-extrabold text-base text-slate-900 flex items-center gap-2">
                 <Edit2 className="w-5 h-5 text-purple-600" />
-                <span>{t('تعديل بيانات سطر الطالب بالكامل', 'Edit Student Row Details')}</span>
+                <span>{t('تعديل بيانات السطر والمبالغ المالية', 'Edit Row & Financial Details')}</span>
               </h3>
               <button
                 onClick={() => setEditingRowStudent(null)}
@@ -540,6 +547,52 @@ export default function GroupDetailsPage() {
                 />
               </div>
 
+              {/* FINANCIAL EDIT BOX (المبلغ المدفوع + المتبقي + الحالة المالية الحية) */}
+              <div className="p-4 bg-emerald-50/70 rounded-2xl border border-emerald-100 space-y-3">
+                <h4 className="font-extrabold text-xs text-emerald-900 flex items-center gap-1.5">
+                  <Coins className="w-4 h-4 text-emerald-600" />
+                  <span>{t('تعديل المبالغ المالية والحالة الماليّة', 'Financial Amounts & Status')}</span>
+                </h4>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-emerald-950 mb-1">{t('المبلغ المدفوع (EGP) *', 'Paid Amount *')}</label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      value={editPaidAmount}
+                      onChange={e => setEditPaidAmount(Number(e.target.value))}
+                      className="w-full p-2.5 bg-white border border-emerald-300 rounded-xl text-sm font-black text-emerald-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">{t('سعر الكورس (EGP)', 'Course Price')}</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={editCoursePrice}
+                      onChange={e => setEditCoursePrice(Number(e.target.value))}
+                      className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold"
+                    />
+                  </div>
+                </div>
+
+                {/* Live Auto Calculation Display */}
+                <div className="pt-2 border-t border-emerald-200/60 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="text-slate-500 font-semibold block">{t('المتبقي المحسوب تلقائياً:', 'Auto Calculated Remaining:')}</span>
+                    <span className="font-extrabold text-rose-600 text-sm">{formatCurrency(liveRemaining)}</span>
+                  </div>
+
+                  <div className="text-left">
+                    <span className="text-slate-500 font-semibold block mb-1">{t('الحالة المالية الناتجة:', 'Resulting Status:')}</span>
+                    <StatusBadge status={liveStatus} type="payment" />
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <label className="block font-bold text-slate-700 mb-1">{t('تاريخ الحجز', 'Booking Date')}</label>
                 <input
@@ -564,7 +617,7 @@ export default function GroupDetailsPage() {
                 </select>
               </div>
 
-              {/* RECEIVING WALLET / ACCOUNT CHOICE */}
+              {/* RECEIVING WALLET CHOICE */}
               <div className="p-3 bg-purple-50/70 rounded-2xl border border-purple-100 space-y-3">
                 <label className="block font-bold text-purple-900 mb-1">
                   {t('جهة / محفظة التحويل (Receiving Account)', 'Receiving Account / Wallet')}
@@ -612,7 +665,7 @@ export default function GroupDetailsPage() {
                 )}
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2 sticky bottom-0 bg-white z-10">
                 <button
                   type="button"
                   onClick={() => setEditingRowStudent(null)}
@@ -624,7 +677,7 @@ export default function GroupDetailsPage() {
                   type="submit"
                   className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-md shadow-purple-600/20"
                 >
-                  {t('حفظ تعديلات السطر', 'Save Row Changes')}
+                  {t('حفظ تعديلات السطر والمبالغ', 'Save Changes')}
                 </button>
               </div>
             </form>
