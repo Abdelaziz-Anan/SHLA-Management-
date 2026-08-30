@@ -247,21 +247,29 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
   }
 ];
 
-// Helper Local Storage State Management Engine
+// Helper Local Storage State Management Engine with In-Memory Write-Through Cache
 class SystemStore {
   private isBrowser = typeof window !== 'undefined';
+  private cache = new Map<string, any>();
 
   private getItem<T>(key: string, fallback: T): T {
+    if (this.cache.has(key)) {
+      return this.cache.get(key);
+    }
     if (!this.isBrowser) return fallback;
     try {
       const item = localStorage.getItem(`center_sys_${key}`);
-      return item ? JSON.parse(item) : fallback;
+      const parsed = item ? JSON.parse(item) : fallback;
+      this.cache.set(key, parsed);
+      return parsed;
     } catch {
+      this.cache.set(key, fallback);
       return fallback;
     }
   }
 
   private setItem<T>(key: string, value: T): void {
+    this.cache.set(key, value);
     if (!this.isBrowser) return;
     try {
       localStorage.setItem(`center_sys_${key}`, JSON.stringify(value));
@@ -353,11 +361,17 @@ class SystemStore {
       id: `log-${Date.now()}`,
       created_at: new Date().toISOString(),
     };
-    this.setItem('audit_logs', [newLog, ...logs]);
+    this.setItem('audit_logs', [newLog, ...logs].slice(0, 200));
+  }
+
+  // Clear memory cache if needed
+  clearCache() {
+    this.cache.clear();
   }
 
   // Reset to initial demo state if needed
   resetToInitial() {
+    this.cache.clear();
     if (!this.isBrowser) return;
     localStorage.removeItem('center_sys_users');
     localStorage.removeItem('center_sys_center');

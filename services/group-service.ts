@@ -11,11 +11,19 @@ export function getGroups(filters?: {
   let groups = store.getGroups();
   const groupStudents = store.getGroupStudents();
 
-  // Attach student count
-  groups = groups.map(g => {
-    const count = groupStudents.filter(gs => gs.group_id === g.id && gs.status === 'active').length;
-    return { ...g, student_count: count };
-  });
+  // Pre-calculate active student count per group in single O(GS) pass
+  const studentCountMap = new Map<string, number>();
+  for (let i = 0; i < groupStudents.length; i++) {
+    const gs = groupStudents[i];
+    if (gs.status === 'active') {
+      studentCountMap.set(gs.group_id, (studentCountMap.get(gs.group_id) || 0) + 1);
+    }
+  }
+
+  groups = groups.map(g => ({
+    ...g,
+    student_count: studentCountMap.get(g.id) || 0,
+  }));
 
   if (!filters) return groups;
 
@@ -47,8 +55,10 @@ export function getGroups(filters?: {
 }
 
 export function getGroupById(id: string): Group | null {
-  const groups = getGroups();
-  return groups.find(g => g.id === id) || null;
+  const group = store.getGroups().find(g => g.id === id);
+  if (!group) return null;
+  const count = store.getGroupStudents().filter(gs => gs.group_id === id && gs.status === 'active').length;
+  return { ...group, student_count: count };
 }
 
 export function getGroupSessions(groupId: string): GroupSession[] {
@@ -244,7 +254,7 @@ export function generateSessionsForGroup(group: Group): GroupSession[] {
 
   for (let i = 1; i <= total; i++) {
     const sessionDate = new Date(startDate);
-    sessionDate.setDate(startDate.getDate() + (i - 1) * 3.5); // Approx spacing
+    sessionDate.setDate(startDate.getDate() + Math.round((i - 1) * 3.5)); // Clean day spacing
     const dateStr = sessionDate.toISOString().split('T')[0];
 
     sessions.push({

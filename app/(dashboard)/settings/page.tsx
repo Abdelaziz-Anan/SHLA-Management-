@@ -174,7 +174,7 @@ export default function SettingsPage() {
           <div className="pt-4 border-t border-slate-100 flex justify-end">
             <button
               type="submit"
-              className="w-full sm:w-auto px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-purple-600/25 active:scale-98 transition-all"
+              className="w-full sm:w-auto px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-purple-600/25 active:scale-98 transition-all hover-lift shine-sweep"
             >
               حفظ وتطبيق إعدادات الهوية
             </button>

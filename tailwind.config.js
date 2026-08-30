@@ -62,6 +62,44 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      boxShadow: {
+        'glow-blue': '0 0 20px -3px rgba(59, 130, 246, 0.35)',
+        'glow-emerald': '0 0 20px -3px rgba(16, 185, 129, 0.35)',
+        'glow-purple': '0 0 20px -3px rgba(168, 85, 247, 0.35)',
+        'glow-amber': '0 0 20px -3px rgba(245, 158, 11, 0.35)',
+        'glow-rose': '0 0 20px -3px rgba(244, 63, 94, 0.35)',
+        'card-hover': '0 12px 24px -6px rgba(15, 23, 42, 0.08), 0 4px 8px -4px rgba(15, 23, 42, 0.04)',
+      },
+      keyframes: {
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(200%)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-6px)' },
+        },
+        'pulse-glow': {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.7', transform: 'scale(1.15)' },
+        },
+        'slide-up': {
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'gradient-shift': {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
+        },
+      },
+      animation: {
+        shimmer: 'shimmer 2.5s infinite',
+        float: 'float 3s ease-in-out infinite',
+        'pulse-glow': 'pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'slide-up': 'slide-up 0.4s ease-out forwards',
+        'gradient-shift': 'gradient-shift 8s ease infinite',
+      },
     },
   },
   plugins: [],

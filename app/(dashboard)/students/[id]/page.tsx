@@ -335,22 +335,22 @@ export default function StudentProfilePage() {
 
         {/* Financial Overview 3-Pill Grid */}
         <div className="mt-6 pt-6 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-            <span className="text-slate-400 text-xs font-bold block">سعر الكورس الإجمالي</span>
-            <span className="text-xl font-black text-slate-800 mt-1 block">
+          <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100/70 rounded-2xl border border-slate-200/80 shadow-2xs">
+            <span className="text-slate-500 text-xs font-bold block">سعر الكورس الإجمالي</span>
+            <span className="text-xl font-black text-slate-850 mt-1 block">
               {formatCurrency(gs.course_price || 0)}
             </span>
           </div>
 
-          <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100">
-            <span className="text-emerald-700 text-xs font-bold block">إجمالي ما تم سداده</span>
+          <div className="p-4 bg-gradient-to-br from-emerald-50/90 to-emerald-100/40 rounded-2xl border border-emerald-200/80 shadow-2xs">
+            <span className="text-emerald-800 text-xs font-bold block">إجمالي ما تم سداده</span>
             <span className="text-xl font-black text-emerald-600 mt-1 block">
               {formatCurrency(gs.total_paid || 0)}
             </span>
           </div>
 
-          <div className="p-4 bg-rose-50/50 rounded-2xl border border-rose-100">
-            <span className="text-rose-700 text-xs font-bold block">المبلغ المتبقي المطلوب</span>
+          <div className="p-4 bg-gradient-to-br from-rose-50/90 to-rose-100/40 rounded-2xl border border-rose-200/80 shadow-2xs">
+            <span className="text-rose-800 text-xs font-bold block">المبلغ المتبقي المطلوب</span>
             <span className="text-xl font-black text-rose-600 mt-1 block">
               {formatCurrency(gs.remaining_balance || 0)}
             </span>
@@ -456,9 +456,9 @@ export default function StudentProfilePage() {
             </div>
 
             {/* DESKTOP TABLE VIEW (hidden md:block) */}
-            <div className="hidden md:block overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto max-h-[500px] overflow-y-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-100">
+                <thead className="sticky top-0 bg-slate-50/95 backdrop-blur-md text-slate-500 font-bold border-b border-slate-200/80 z-10 shadow-2xs">
                   <tr>
                     <th className="p-4">معرف الدفعة</th>
                     <th className="p-4">المبلغ</th>
@@ -472,13 +472,15 @@ export default function StudentProfilePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {payments.map(pay => (
-                    <tr
-                      key={pay.id}
-                      className={`hover:bg-slate-50/80 transition-colors ${
-                        pay.status === 'reversed' ? 'bg-slate-50/60 opacity-60' : ''
-                      }`}
-                    >
+                  {payments.map(pay => {
+                    const isReversed = pay.status === 'reversed';
+                    const stripeClass = isReversed ? 'border-r-4 border-r-slate-300 bg-slate-50/60 opacity-60' : 'border-r-4 border-r-emerald-500';
+
+                    return (
+                      <tr
+                        key={pay.id}
+                        className={`hover:bg-slate-50/90 transition-colors even:bg-slate-50/40 ${stripeClass}`}
+                      >
                       <td className="p-4 font-bold text-slate-400">#{pay.id.slice(-6)}</td>
                       <td className="p-4 font-black text-emerald-600 text-sm">+{formatCurrency(pay.amount)}</td>
                       <td className="p-4 font-medium text-slate-600">{formatDate(pay.payment_date)}</td>
@@ -534,7 +536,8 @@ export default function StudentProfilePage() {
                         )}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

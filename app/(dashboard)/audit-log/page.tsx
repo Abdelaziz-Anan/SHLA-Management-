@@ -65,9 +65,9 @@ export default function AuditLogPage() {
             </div>
 
             {/* DESKTOP TABLE VIEW */}
-            <div className="hidden sm:block overflow-x-auto">
+            <div className="hidden sm:block overflow-x-auto max-h-[600px] overflow-y-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-100">
+                <thead className="sticky top-0 bg-slate-50/95 backdrop-blur-md text-slate-500 font-bold border-b border-slate-200/80 z-10 shadow-2xs">
                   <tr>
                     <th className="p-4">#</th>
                     <th className="p-4">اسم المستخدِم</th>
@@ -77,21 +77,32 @@ export default function AuditLogPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {logs.map((log, idx) => (
-                    <tr key={log.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-4 font-bold text-slate-400">{idx + 1}</td>
-                      <td className="p-4 font-black text-slate-900">{log.user_name || 'النظام'}</td>
-                      <td className="p-4 font-bold text-slate-800">{log.action}</td>
-                      <td className="p-4">
-                        <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold text-[11px]">
-                          {log.entity_type}
-                        </span>
-                      </td>
-                      <td className="p-4 text-slate-500 font-medium">
-                        {new Date(log.created_at).toLocaleString('ar-EG')}
-                      </td>
-                    </tr>
-                  ))}
+                  {logs.map((log, idx) => {
+                    const entityColors: Record<string, string> = {
+                      Payment: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                      Student: 'bg-blue-50 text-blue-700 border-blue-200',
+                      Group: 'bg-purple-50 text-purple-700 border-purple-200',
+                      Settlement: 'bg-amber-50 text-amber-700 border-amber-200',
+                      User: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                    };
+                    const badgeClass = entityColors[log.entity_type] || 'bg-slate-100 text-slate-700 border-slate-200';
+
+                    return (
+                      <tr key={log.id} className="hover:bg-slate-50/90 transition-colors even:bg-slate-50/40">
+                        <td className="p-4 font-bold text-slate-400">{idx + 1}</td>
+                        <td className="p-4 font-black text-slate-900">{log.user_name || 'النظام'}</td>
+                        <td className="p-4 font-bold text-slate-800">{log.action}</td>
+                        <td className="p-4">
+                          <span className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] border ${badgeClass}`}>
+                            {log.entity_type}
+                          </span>
+                        </td>
+                        <td className="p-4 text-slate-500 font-medium">
+                          {new Date(log.created_at).toLocaleString('ar-EG')}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

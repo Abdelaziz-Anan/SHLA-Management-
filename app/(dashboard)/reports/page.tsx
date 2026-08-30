@@ -226,9 +226,9 @@ export default function ReportsPage() {
       {/* TAB 2: GROUPS REVENUE */}
       {activeTab === 'groups' && (
         <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden animate-in fade-in duration-200">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-100">
+              <thead className="sticky top-0 bg-slate-50/95 backdrop-blur-md text-slate-500 font-bold border-b border-slate-200/80 z-10 shadow-2xs">
                 <tr>
                   <th className="p-4">المجموعة</th>
                   <th className="p-4">الكورس والمحاضر</th>
@@ -258,9 +258,9 @@ export default function ReportsPage() {
       {/* TAB 3: DEBTORS */}
       {activeTab === 'debtors' && (
         <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden animate-in fade-in duration-200">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-100">
+              <thead className="sticky top-0 bg-slate-50/95 backdrop-blur-md text-slate-500 font-bold border-b border-slate-200/80 z-10 shadow-2xs">
                 <tr>
                   <th className="p-4">#</th>
                   <th className="p-4">اسم الطالب</th>
@@ -274,7 +274,7 @@ export default function ReportsPage() {
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 {debtors.map((d, idx) => (
-                  <tr key={d.id} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={d.id} className="hover:bg-slate-50/90 transition-colors even:bg-slate-50/40 border-r-4 border-r-rose-500">
                     <td className="p-4 font-bold text-slate-400">{idx + 1}</td>
                     <td className="p-4 font-black text-slate-900">{d.student?.full_name}</td>
                     <td className="p-4 font-semibold text-slate-600" dir="ltr">{d.student?.phone}</td>

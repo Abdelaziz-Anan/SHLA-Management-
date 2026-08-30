@@ -23,18 +23,38 @@ export function getGroupStudentsWithDetails(groupId?: string, search?: string): 
     groupStudents = groupStudents.filter(gs => gs.status === 'active');
   }
 
-  // Populate details & dynamic calculations
-  const detailed = groupStudents.map(gs => {
-    const student = students.find(s => s.id === gs.student_id);
-    const group = groups.find(g => g.id === gs.group_id);
-    const studentPayments = payments
-      .filter(p => p.group_student_id === gs.id)
-      .map(p => {
-        const acc = accounts.find(a => a.id === p.receiving_account_id);
-        return { ...p, receiving_account: acc };
-      });
+  // Pre-index collections into O(1) Map lookups
+  const studentMap = new Map(students.map(s => [s.id, s]));
+  const groupMap = new Map(groups.map(g => [g.id, g]));
+  const accountMap = new Map(accounts.map(a => [a.id, a]));
 
-    const total_paid = studentPayments.reduce((sum, p) => sum + p.amount, 0);
+  // Pre-group valid payments by group_student_id in a single O(P) pass
+  const paymentsByGS = new Map<string, Payment[]>();
+  for (let i = 0; i < payments.length; i++) {
+    const p = payments[i];
+    const pWithAcc = {
+      ...p,
+      receiving_account: p.receiving_account_id ? accountMap.get(p.receiving_account_id) : undefined,
+    };
+    const list = paymentsByGS.get(p.group_student_id);
+    if (list) {
+      list.push(pWithAcc);
+    } else {
+      paymentsByGS.set(p.group_student_id, [pWithAcc]);
+    }
+  }
+
+  // Populate details & dynamic calculations in O(GS) single pass
+  const detailed = groupStudents.map(gs => {
+    const student = studentMap.get(gs.student_id);
+    const group = groupMap.get(gs.group_id);
+    const studentPayments = paymentsByGS.get(gs.id) || [];
+
+    let total_paid = 0;
+    for (let i = 0; i < studentPayments.length; i++) {
+      total_paid += studentPayments[i].amount;
+    }
+
     const remaining_balance = Math.max(0, gs.course_price - total_paid);
     const payment_status = getPaymentStatus(gs.course_price, total_paid);
     
@@ -76,8 +96,47 @@ export function getGroupStudentsWithDetails(groupId?: string, search?: string): 
 }
 
 export function getGroupStudentById(id: string): GroupStudent | null {
-  const list = getGroupStudentsWithDetails();
-  return list.find(gs => gs.id === id) || null;
+  const allGS = store.getGroupStudents();
+  const gs = allGS.find(g => g.id === id);
+  if (!gs) return null;
+
+  const student = store.getStudents().find(s => s.id === gs.student_id);
+  const group = store.getGroups().find(g => g.id === gs.group_id);
+  const accounts = store.getAccounts();
+  const accountMap = new Map(accounts.map(a => [a.id, a]));
+  const studentPayments = store.getPayments()
+    .filter(p => p.group_student_id === gs.id)
+    .map(p => ({
+      ...p,
+      receiving_account: p.receiving_account_id ? accountMap.get(p.receiving_account_id) : undefined,
+    }));
+
+  const total_paid = studentPayments
+    .filter(p => p.status === 'valid')
+    .reduce((sum, p) => sum + p.amount, 0);
+  const remaining_balance = Math.max(0, gs.course_price - total_paid);
+  const payment_status = getPaymentStatus(gs.course_price, total_paid);
+
+  const firstPay = studentPayments[0];
+  let receiving_account_number = '-';
+  if (gs.custom_receiving_account && gs.custom_receiving_account.trim() !== '') {
+    receiving_account_number = gs.custom_receiving_account.trim();
+  } else if (firstPay?.custom_receiving_account && firstPay.custom_receiving_account.trim() !== '') {
+    receiving_account_number = firstPay.custom_receiving_account.trim();
+  } else if (firstPay?.receiving_account) {
+    receiving_account_number = `${firstPay.receiving_account.account_number || firstPay.receiving_account.account_name}`;
+  }
+
+  return {
+    ...gs,
+    student,
+    group,
+    payments: studentPayments,
+    total_paid,
+    remaining_balance,
+    receiving_account_number,
+    payment_status,
+  };
 }
 
 export function addStudentToGroup(data: {

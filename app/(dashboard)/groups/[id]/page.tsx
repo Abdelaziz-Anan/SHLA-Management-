@@ -523,9 +523,9 @@ export default function GroupDetailsPage() {
             </div>
 
             {/* DESKTOP TABLE VIEW (hidden on mobile, md:block) */}
-            <div className="hidden md:block overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto max-h-[650px] overflow-y-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-100">
+                <thead className="sticky top-0 bg-slate-50/95 backdrop-blur-md text-slate-500 font-bold border-b border-slate-200/80 z-10 shadow-2xs">
                   <tr>
                     <th className="p-4">#</th>
                     <th className="p-4">{t('اسم الطالب', 'Student Name')}</th>
@@ -543,9 +543,16 @@ export default function GroupDetailsPage() {
                 <tbody className="divide-y divide-slate-100 text-slate-700">
                   {students.map((gs, idx) => {
                     const receiptUrl = gs.payments?.[0]?.receipt_url;
+                    const isPaid = (gs.remaining_balance || 0) === 0;
+                    const isPartial = (gs.total_paid || 0) > 0 && !isPaid;
+                    const stripeClass = isPaid
+                      ? 'border-r-4 border-r-emerald-500'
+                      : isPartial
+                      ? 'border-r-4 border-r-amber-500'
+                      : 'border-r-4 border-r-rose-500';
 
                     return (
-                      <tr key={gs.id} className="hover:bg-slate-50/80 transition-colors">
+                      <tr key={gs.id} className={`hover:bg-slate-50/90 transition-colors even:bg-slate-50/40 ${stripeClass}`}>
                         <td className="p-4 font-bold text-slate-400">{idx + 1}</td>
                         <td className="p-4 font-extrabold text-slate-900">{gs.student?.full_name}</td>
                         <td className="p-4 font-semibold text-slate-600" dir="ltr">{gs.student?.phone}</td>

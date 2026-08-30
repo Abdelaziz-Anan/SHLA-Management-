@@ -102,7 +102,7 @@ export function Sidebar({ user }: SidebarProps) {
         )}
 
         {/* Navigation Links */}
-        <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 py-2 space-y-1.5 overflow-y-auto">
           {filteredItems.map(item => {
             const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
             const Icon = item.icon;
@@ -111,16 +111,19 @@ export function Sidebar({ user }: SidebarProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group',
+                  'relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 group overflow-hidden',
                   isActive
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25 font-bold'
-                    : 'text-slate-300 hover:bg-slate-900 hover:text-white'
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/30 font-bold'
+                    : 'text-slate-300 hover:bg-slate-900/90 hover:text-white'
                 )}
               >
+                {isActive && (
+                  <span className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-white rounded-l-full shadow-glow-blue" />
+                )}
                 <Icon
                   className={cn(
-                    'w-4 h-4 transition-transform group-hover:scale-110 flex-shrink-0',
-                    isActive ? 'text-white' : 'text-slate-400 group-hover:text-blue-400'
+                    'w-4 h-4 transition-transform duration-200 group-hover:scale-110 flex-shrink-0',
+                    isActive ? 'text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]' : 'text-slate-400 group-hover:text-blue-400'
                   )}
                 />
                 <span className="truncate">{item.label}</span>

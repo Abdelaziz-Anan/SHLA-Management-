@@ -189,9 +189,9 @@ export default function FinancePage() {
             </div>
 
             {/* DESKTOP TABLE VIEW */}
-            <div className="hidden sm:block overflow-x-auto">
+            <div className="hidden sm:block overflow-x-auto max-h-[550px] overflow-y-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-100">
+                <thead className="sticky top-0 bg-slate-50/95 backdrop-blur-md text-slate-500 font-bold border-b border-slate-200/80 z-10 shadow-2xs">
                   <tr>
                     <th className="p-4">#</th>
                     <th className="p-4">تاريخ التسليم</th>
@@ -203,7 +203,7 @@ export default function FinancePage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
                   {settlements.map((s, idx) => (
-                    <tr key={s.id} className="hover:bg-slate-50/80 transition-colors">
+                    <tr key={s.id} className="hover:bg-slate-50/90 transition-colors even:bg-slate-50/40 border-r-4 border-r-emerald-500">
                       <td className="p-4 font-bold text-slate-400">{idx + 1}</td>
                       <td className="p-4 font-medium text-slate-600">{formatDate(s.settlement_date)}</td>
                       <td className="p-4 font-black text-emerald-600 text-sm">{formatCurrency(s.amount)}</td>
@@ -221,8 +221,8 @@ export default function FinancePage() {
 
       {/* SETTLEMENT MODAL (RESPONSIVE) */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 my-8 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 my-8 animate-slide-up duration-300">
             <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
               <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
                 <Plus className="w-5 h-5 text-emerald-600" />

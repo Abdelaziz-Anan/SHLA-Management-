@@ -263,14 +263,26 @@ export default function StudentsPage() {
             <p className="text-xs text-slate-400 mt-1">تأكد من شروط البحث أو الفلاتر المحددة</p>
           </div>
         ) : (
-          filteredStudents.map(gs => (
-            <div
-              key={gs.id}
-              className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all p-4 sm:p-5 flex flex-col justify-between group"
-            >
-              <div>
-                {/* Card Top */}
-                <div className="flex items-start justify-between pb-3 border-b border-slate-100 gap-2">
+          filteredStudents.map(gs => {
+            const isPaid = gs.payment_status === 'Fully Paid';
+            const isPartial = gs.payment_status === 'Partially Paid';
+            const statusLightBar = isPaid
+              ? 'from-emerald-500 via-emerald-400 to-transparent'
+              : isPartial
+              ? 'from-amber-500 via-amber-400 to-transparent'
+              : 'from-rose-500 via-rose-400 to-transparent';
+
+            return (
+              <div
+                key={gs.id}
+                className="relative bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover-lift shine-sweep p-4 sm:p-5 flex flex-col justify-between group overflow-hidden transition-all duration-300"
+              >
+                {/* Top Accent Light Bar */}
+                <div className={`absolute top-0 right-0 left-0 h-[2.5px] bg-gradient-to-l ${statusLightBar} opacity-80 group-hover:opacity-100 transition-opacity`} />
+
+                <div>
+                  {/* Card Top */}
+                  <div className="flex items-start justify-between pb-3 border-b border-slate-100 gap-2">
                   <div className="overflow-hidden pr-1">
                     <h3 className="font-black text-sm sm:text-base text-slate-900 truncate">
                       {gs.student?.full_name}
@@ -337,7 +349,8 @@ export default function StudentsPage() {
                 </Link>
               </div>
             </div>
-          ))
+            );
+          })
         )}
       </div>
 

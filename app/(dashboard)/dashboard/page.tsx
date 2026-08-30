@@ -121,6 +121,7 @@ export default function DashboardPage() {
           subtitle={t(`${summary.payment_count} عملية معتمدة`, `${summary.payment_count} verified`)}
           icon={Wallet}
           variant="blue"
+          className="animate-slide-up stagger-1"
         />
 
         <StatCard
@@ -129,6 +130,7 @@ export default function DashboardPage() {
           subtitle={t('محفظة وحسابات المدير', 'Direct Manager Wallet')}
           icon={TrendingUp}
           variant="purple"
+          className="animate-slide-up stagger-2"
         />
 
         <StatCard
@@ -137,6 +139,7 @@ export default function DashboardPage() {
           subtitle={t('متبقي لم يسلم للمدير', 'Awaiting Settlement')}
           icon={Building}
           variant="emerald"
+          className="animate-slide-up stagger-3"
         />
 
         <StatCard
@@ -145,15 +148,16 @@ export default function DashboardPage() {
           subtitle={t('متبقي على الطلاب', 'Owed by students')}
           icon={AlertCircle}
           variant="rose"
+          className="animate-slide-up stagger-4"
         />
       </div>
 
       {/* Secondary Quick Info Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
         {/* Active Groups Overview */}
-        <div className="bg-white rounded-2xl sm:rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between hover-lift shine-sweep group">
           <div className="flex items-center justify-between">
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl border border-blue-100/60">
+            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl border border-blue-100/60 group-hover:shadow-glow-blue transition-shadow duration-300">
               <Users2 className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <Link href="/groups" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
@@ -170,9 +174,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Total Students Overview */}
-        <div className="bg-white rounded-2xl sm:rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between hover-lift shine-sweep group">
           <div className="flex items-center justify-between">
-            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100/60">
+            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100/60 group-hover:shadow-glow-emerald transition-shadow duration-300">
               <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <Link href="/students" className="text-xs font-bold text-emerald-600 hover:underline flex items-center gap-1">
@@ -189,9 +193,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Reports Shortcut Card */}
-        <div className="bg-white rounded-2xl sm:rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between hover-lift shine-sweep group">
           <div className="flex items-center justify-between">
-            <div className="p-3 bg-purple-50 text-purple-600 rounded-xl border border-purple-100/60">
+            <div className="p-3 bg-purple-50 text-purple-600 rounded-xl border border-purple-100/60 group-hover:shadow-glow-purple transition-shadow duration-300">
               <FileSpreadsheet className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <Link href="/reports" className="text-xs font-bold text-purple-600 hover:underline flex items-center gap-1">

@@ -16,15 +16,15 @@ export function Navbar({ user }: NavbarProps) {
   const { lang, toggleLang, t } = useLanguage();
 
   return (
-    <header className="bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 shadow-2xs">
+    <header className="relative bg-white/80 backdrop-blur-xl border-b border-slate-200/70 sticky top-0 z-30 shadow-xs after:absolute after:bottom-0 after:inset-x-0 after:h-[1.5px] after:bg-gradient-to-r after:from-transparent after:via-blue-500/25 after:to-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand / Center Title */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 group cursor-pointer">
             <img
               src="/logo.jpeg"
               alt="SHLA Logo"
-              className="w-9 h-9 rounded-xl object-cover border border-slate-200 shadow-xs flex-shrink-0"
+              className="w-9 h-9 rounded-xl object-cover border border-slate-200/90 shadow-xs flex-shrink-0 group-hover:scale-105 transition-transform duration-200"
             />
             <div>
               <h1 className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-none">
@@ -42,7 +42,7 @@ export function Navbar({ user }: NavbarProps) {
           {/* Language Toggle Button */}
           <button
             onClick={toggleLang}
-            className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all border border-slate-200 flex items-center gap-1.5"
+            className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all duration-200 border border-slate-200/80 flex items-center gap-1.5 active:scale-95 shadow-2xs"
             title="تبديل لغة الواجهة"
           >
             <Globe className="w-3.5 h-3.5 text-blue-600" />
@@ -61,7 +61,7 @@ export function Navbar({ user }: NavbarProps) {
                   logoutUser();
                   window.location.href = '/login';
                 }}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors border border-rose-200/60"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-all duration-200 border border-rose-200/60 active:scale-95 shadow-2xs"
                 title={t('تسجيل الخروج', 'Log Out')}
               >
                 <LogOut className="w-3.5 h-3.5" />
@@ -71,7 +71,7 @@ export function Navbar({ user }: NavbarProps) {
           ) : (
             <Link
               href="/login"
-              className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors shadow-md shadow-blue-600/20"
+              className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-600/20 active:scale-95"
             >
               {t('تسجيل الدخول', 'Log In')}
             </Link>

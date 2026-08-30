@@ -57,7 +57,7 @@ export default function LoginPage() {
           <img
             src="/logo.jpeg"
             alt="SHLA Logo"
-            className="w-24 h-24 rounded-3xl object-cover border-4 border-slate-700 shadow-2xl mx-auto mb-4"
+            className="w-24 h-24 rounded-3xl object-cover border-4 border-slate-700 shadow-2xl mx-auto mb-4 animate-float shadow-glow-blue"
           />
           <h2 className="text-3xl font-extrabold text-white tracking-tight">
             SHLA Management
@@ -68,7 +68,10 @@ export default function LoginPage() {
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-slate-800/80 backdrop-blur-xl py-8 px-6 shadow-2xl rounded-3xl sm:px-10 border border-slate-700/60">
+          <div className="relative bg-slate-850/90 backdrop-blur-2xl py-8 px-6 shadow-2xl rounded-3xl sm:px-10 border border-slate-700/80 overflow-hidden">
+            {/* Top Light Accent Bar */}
+            <div className="absolute top-0 right-0 left-0 h-[2.5px] bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500" />
+
             <form className="space-y-6" onSubmit={handleLogin}>
               {error && (
                 <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm font-semibold flex items-center gap-3 animate-in fade-in duration-200">
@@ -129,7 +132,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50"
+                  className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50 hover-lift shine-sweep"
                 >
                   {loading ? t('جاري التحقق والتسجيل...', 'Signing in...') : t('تسجيل الدخول إلى النظام', 'Sign In to SHLA System')}
                 </button>

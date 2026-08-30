@@ -216,9 +216,9 @@ export default function UsersPage() {
         </div>
 
         {/* DESKTOP TABLE VIEW */}
-        <div className="hidden md:block overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto max-h-[600px] overflow-y-auto">
           <table className="w-full text-right text-xs">
-            <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-100">
+            <thead className="sticky top-0 bg-slate-50/95 backdrop-blur-md text-slate-500 font-bold border-b border-slate-200/80 z-10 shadow-2xs">
               <tr>
                 <th className="p-4">{t('اسم المستخدم', 'User Name')}</th>
                 <th className="p-4">{t('البريد الإلكتروني', 'Email')}</th>
@@ -231,7 +231,12 @@ export default function UsersPage() {
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {users.map(u => (
-                <tr key={u.id} className="hover:bg-slate-50 transition-colors">
+                <tr
+                  key={u.id}
+                  className={`hover:bg-slate-50/90 transition-colors even:bg-slate-50/40 ${
+                    u.role === 'manager' ? 'border-r-4 border-r-purple-500' : 'border-r-4 border-r-blue-500'
+                  }`}
+                >
                   <td className="p-4 font-black text-slate-900">{u.full_name}</td>
                   <td className="p-4 font-medium text-slate-600">{u.email}</td>
                   <td className="p-4 font-semibold text-slate-700" dir="ltr">{u.phone || '-'}</td>

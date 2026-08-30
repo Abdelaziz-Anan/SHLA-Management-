@@ -5,14 +5,15 @@ import { getCurrentUser } from './auth-service';
 export function getPaymentsByGroupStudent(groupStudentId: string): Payment[] {
   const payments = store.getPayments();
   const accounts = store.getAccounts();
+  const accountMap = new Map(accounts.map(a => [a.id, a]));
 
   return payments
     .filter(p => p.group_student_id === groupStudentId)
-    .map(p => {
-      const acc = accounts.find(a => a.id === p.receiving_account_id);
-      return { ...p, receiving_account: acc };
-    })
-    .sort((a, b) => new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime());
+    .map(p => ({
+      ...p,
+      receiving_account: p.receiving_account_id ? accountMap.get(p.receiving_account_id) : undefined,
+    }))
+    .sort((a, b) => b.payment_date.localeCompare(a.payment_date));
 }
 
 export function recordPayment(data: {

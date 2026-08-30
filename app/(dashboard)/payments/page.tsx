@@ -246,9 +246,9 @@ export default function PaymentsPage() {
             </div>
 
             {/* DESKTOP FULL TABLE */}
-            <div className="hidden lg:block overflow-x-auto">
+            <div className="hidden lg:block overflow-x-auto max-h-[650px] overflow-y-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-100">
+                <thead className="sticky top-0 bg-slate-50/95 backdrop-blur-md text-slate-500 font-bold border-b border-slate-200/80 z-10 shadow-2xs">
                   <tr>
                     <th className="p-4">معرف العملية</th>
                     <th className="p-4">اسم الطالب</th>
@@ -263,13 +263,15 @@ export default function PaymentsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {filteredPayments.map(pay => (
-                    <tr
-                      key={pay.id}
-                      className={`hover:bg-slate-50/80 transition-colors ${
-                        pay.status === 'reversed' ? 'bg-slate-50/60 opacity-60' : ''
-                      }`}
-                    >
+                  {filteredPayments.map(pay => {
+                    const isReversed = pay.status === 'reversed';
+                    const stripeClass = isReversed ? 'border-r-4 border-r-slate-300 bg-slate-50/60 opacity-60' : 'border-r-4 border-r-emerald-500';
+
+                    return (
+                      <tr
+                        key={pay.id}
+                        className={`hover:bg-slate-50/90 transition-colors even:bg-slate-50/40 ${stripeClass}`}
+                      >
                       <td className="p-4 font-bold text-slate-400">#{pay.id.slice(-6)}</td>
                       <td className="p-4 font-black text-slate-900">
                         {pay.groupStudent?.student?.full_name || 'طالب'}
@@ -325,7 +327,8 @@ export default function PaymentsPage() {
                         )}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

@@ -13,10 +13,25 @@ export function getGroupRevenueReport() {
   const groups = store.getGroups();
   const allGroupStudents = getGroupStudentsWithDetails();
 
+  const studentsByGroup = new Map<string, typeof allGroupStudents>();
+  for (let i = 0; i < allGroupStudents.length; i++) {
+    const gs = allGroupStudents[i];
+    const list = studentsByGroup.get(gs.group_id);
+    if (list) {
+      list.push(gs);
+    } else {
+      studentsByGroup.set(gs.group_id, [gs]);
+    }
+  }
+
   return groups.map(g => {
-    const studentsInGroup = allGroupStudents.filter(gs => gs.group_id === g.id);
-    const totalCollected = studentsInGroup.reduce((sum, gs) => sum + (gs.total_paid || 0), 0);
-    const totalOutstanding = studentsInGroup.reduce((sum, gs) => sum + (gs.remaining_balance || 0), 0);
+    const studentsInGroup = studentsByGroup.get(g.id) || [];
+    let totalCollected = 0;
+    let totalOutstanding = 0;
+    for (let i = 0; i < studentsInGroup.length; i++) {
+      totalCollected += (studentsInGroup[i].total_paid || 0);
+      totalOutstanding += (studentsInGroup[i].remaining_balance || 0);
+    }
     const expectedTotal = studentsInGroup.length * g.course_price;
 
     return {

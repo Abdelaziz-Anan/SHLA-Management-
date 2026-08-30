@@ -221,13 +221,16 @@ export default function GroupsPage() {
           filteredGroups.map(group => (
             <div
               key={group.id}
-              className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all p-4 sm:p-5 flex flex-col justify-between group"
+              className="relative bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover-lift shine-sweep p-4 sm:p-5 flex flex-col justify-between group overflow-hidden transition-all duration-300 hover:border-blue-300/80"
             >
+              {/* Top Accent Light Bar */}
+              <div className="absolute top-0 right-0 left-0 h-[2.5px] bg-gradient-to-l from-blue-500 via-blue-400 to-transparent opacity-70 group-hover:opacity-100 transition-opacity" />
+
               <div>
                 {/* Top Card Row */}
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-extrabold px-3 py-1 rounded-xl bg-blue-50 text-blue-700 border border-blue-100">
+                    <span className="text-xs font-extrabold px-3 py-1 rounded-xl bg-blue-50 text-blue-700 border border-blue-100 group-hover:shadow-glow-blue transition-shadow">
                       مجموعة #{group.group_number}
                     </span>
                     <StatusBadge status={group.status} type="group" />
@@ -263,7 +266,7 @@ export default function GroupsPage() {
 
                   <div className="pt-2 text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-100">
                     <span>البدء: {formatDate(group.start_date)}</span>
-                    <span className="font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-lg">
+                    <span className="font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-lg border border-blue-100/60">
                       {group.student_count || 0} طلاب مسجلين
                     </span>
                   </div>
@@ -274,7 +277,7 @@ export default function GroupsPage() {
               <div className="mt-4 pt-3 border-t border-slate-100">
                 <Link
                   href={`/groups/${group.id}`}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-slate-900 hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-xs transition-colors active:scale-98"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-slate-900 hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-98"
                 >
                   <span>فتح كشف المجموعة والجدول</span>
                   <ChevronLeft className="w-4 h-4" />
@@ -287,8 +290,8 @@ export default function GroupsPage() {
 
       {/* CREATE GROUP MODAL (RESPONSIVE 1-COL MOBILE, 2-COL DESKTOP) */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-100 my-8 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-100 my-8 animate-slide-up duration-300">
             <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
               <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
                 <Plus className="w-5 h-5 text-blue-600" />
