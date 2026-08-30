@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { loginWithCredentials } from '@/services/auth-service';
 import { useLanguage } from '@/lib/language-context';
-import { Lock, User, Eye, EyeOff, AlertCircle, Globe, ShieldCheck } from 'lucide-react';
+import { Lock, User, Eye, EyeOff, AlertCircle, Globe } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,12 +28,6 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleQuickDemo = (roleEmail: string, defaultPass: string = 'assistant123') => {
-    setEmailOrPhone(roleEmail);
-    setPassword(defaultPass);
-    setError('');
   };
 
   return (
@@ -143,37 +137,6 @@ export default function LoginPage() {
                 </button>
               </div>
             </form>
-
-            {/* Quick Demo Selectors */}
-            <div className="mt-8 pt-6 border-t border-slate-700/60 text-center">
-              <p className="text-xs text-slate-400 mb-3 font-semibold flex items-center justify-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>{t('اختصارات الدخول السريع والتجربة:', 'Quick Demo Sign In:')}</span>
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemo('samar@center.com', 'manager123')}
-                  className="px-2 py-2 bg-slate-900/90 hover:bg-purple-950/50 text-purple-300 border border-purple-800/50 rounded-xl text-xs font-bold transition-all hover:scale-102 shadow-xs"
-                >
-                  د / سمر (المدير)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemo('assistant1@center.com', 'assistant123')}
-                  className="px-2 py-2 bg-slate-900/80 hover:bg-cyan-950/40 text-cyan-300 border border-cyan-800/40 rounded-xl text-xs font-semibold transition-all hover:scale-102 shadow-xs"
-                >
-                  مساعد 1
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemo('assistant2@center.com', 'assistant123')}
-                  className="px-2 py-2 bg-slate-900/80 hover:bg-cyan-950/40 text-cyan-300 border border-cyan-800/40 rounded-xl text-xs font-semibold transition-all hover:scale-102 shadow-xs"
-                >
-                  مساعد 2
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
