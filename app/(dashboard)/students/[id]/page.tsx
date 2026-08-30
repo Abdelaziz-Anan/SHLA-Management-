@@ -34,6 +34,10 @@ import {
   X,
   Eye,
   Edit2,
+  Phone,
+  MessageCircle,
+  Clock,
+  FileImage,
 } from 'lucide-react';
 
 export default function StudentProfilePage() {
@@ -99,7 +103,7 @@ export default function StudentProfilePage() {
     setPayError('');
 
     if (!payAmount || payAmount <= 0) {
-      setPayError('يرجى أدخال مبلغ صحيح أكبر من صفر');
+      setPayError('يرجى إدخال مبلغ صحيح أكبر من صفر');
       return;
     }
 
@@ -135,6 +139,7 @@ export default function StudentProfilePage() {
       setPayReceiptUrl('');
       setPayCustomWallet('');
       loadData();
+      alert('تم تسجيل الدفعة المالية بنجاح');
     } catch (err: any) {
       setPayError(err.message || 'فشل رصد العملية المالية');
     }
@@ -201,6 +206,18 @@ export default function StudentProfilePage() {
     }
   };
 
+  const handleReverse = (paymentId: string) => {
+    const reason = prompt('يرجى كتابة سبب الإلغاء أو التصحيح لهذه الدفعة:');
+    if (!reason) return;
+    try {
+      reversePayment(paymentId, reason);
+      loadData();
+      alert('تم إلغاء وتصحيح المعاملة بنجاح');
+    } catch (e: any) {
+      alert(e.message || 'فشل الإلغاء');
+    }
+  };
+
   const handleTransfer = (e: React.FormEvent) => {
     e.preventDefault();
     setTransferError('');
@@ -220,429 +237,406 @@ export default function StudentProfilePage() {
     }
   };
 
+  const getWhatsAppLink = (phone: string, studentName: string) => {
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const formatted = cleanPhone.startsWith('0') ? `2${cleanPhone}` : cleanPhone;
+    const msg = encodeURIComponent(`أهلاً بك يا ${studentName}، نرحب بك من أكاديمية SHLA بخصوص اشتراكك في مجموعة #${gs?.group?.group_number}`);
+    return `https://wa.me/${formatted}?text=${msg}`;
+  };
+
   if (!gs) {
     return (
-      <div className="p-12 text-center text-slate-500 font-bold">
-        بيانات اشتراك الطالب غير موجودة
+      <div className="p-8 sm:p-12 text-center text-slate-500 font-bold">
+        <p>بيانات اشتراك الطالب غير موجودة</p>
+        <Link href="/students" className="text-blue-600 font-bold text-xs mt-2 inline-block">
+          العودة لدليل الطلاب
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-200">
-      {/* Back Link */}
-      <Link
-        href="/students"
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors"
-      >
-        <ArrowRight className="w-4 h-4" />
-        <span>العودة لجميع الطلاب</span>
-      </Link>
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-200">
+      {/* Back Navigation */}
+      <div className="flex items-center justify-between">
+        <Link
+          href="/students"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors"
+        >
+          <ArrowRight className="w-4 h-4" />
+          <span>العودة لجميع الطلاب</span>
+        </Link>
+      </div>
 
-      {/* Student Profile Card Header */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      {/* Student Profile Header Card */}
+      <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 border border-slate-200/80 shadow-xs">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
           <div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-extrabold px-3 py-1 bg-slate-100 text-slate-700 rounded-lg">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xs font-black px-3 py-1 bg-slate-100 text-slate-700 rounded-xl">
                 معرف الطالب #{gs.student_id.slice(-6)}
               </span>
               <StatusBadge status={gs.payment_status || 'Not Paid'} type="payment" />
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 tracking-tight">
+            <h1 className="text-xl sm:text-3xl font-black text-slate-900 mt-2 sm:mt-3 tracking-tight">
               {gs.student?.full_name}
             </h1>
 
-            <div className="mt-4 flex flex-wrap gap-4 text-xs font-semibold text-slate-600">
-              <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200/60" dir="ltr">
-                <span>{gs.student?.phone}</span>
+            <div className="mt-3 sm:mt-4 flex flex-wrap items-center gap-2.5 sm:gap-4 text-xs font-semibold text-slate-600">
+              {/* Phone and WhatsApp */}
+              <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200/60" dir="ltr">
+                <a href={`tel:${gs.student?.phone}`} className="flex items-center gap-1 hover:text-blue-600">
+                  <Phone className="w-3.5 h-3.5 text-slate-400" />
+                  <span>{gs.student?.phone}</span>
+                </a>
+                {gs.student?.phone && (
+                  <a
+                    href={getWhatsAppLink(gs.student.phone, gs.student.full_name)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-1 text-emerald-600 hover:bg-emerald-50 rounded-lg"
+                    title="فتح واتساب"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                  </a>
+                )}
               </div>
-              <div className="flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-100 font-bold">
-                <span>المجموعة: #{gs.group?.group_number} ({gs.group?.course_name})</span>
-              </div>
-              <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200/60">
-                <span>تاريخ الحجز: {formatDate(gs.booking_date)}</span>
-              </div>
+
+              {/* Group Info Link */}
+              <Link
+                href={`/groups/${gs.group_id}`}
+                className="flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl border border-blue-100 hover:bg-blue-100 transition-colors"
+              >
+                <span>مجموعة #{gs.group?.group_number} ({gs.group?.course_name})</span>
+              </Link>
             </div>
           </div>
 
-          {/* Financial Totals & Actions */}
-          <div className="flex flex-col items-start md:items-end gap-3 border-t md:border-t-0 pt-4 md:pt-0 border-slate-100">
-            <div className="flex items-center gap-6">
-              <div className="text-center md:text-left">
-                <span className="text-xs font-bold text-slate-400 block">إجمالي المدفوع</span>
-                <span className="text-2xl font-black text-emerald-600">
-                  {formatCurrency(gs.total_paid || 0)}
-                </span>
-              </div>
+          {/* Action Buttons: New Payment & Transfer Group */}
+          <div className="flex flex-col sm:flex-row items-stretch md:items-center gap-2.5 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
+            <button
+              onClick={() => setIsPayModalOpen(true)}
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-98"
+            >
+              <CreditCard className="w-4 h-4" />
+              <span>تسجيل دفعة مالية</span>
+            </button>
 
-              <div className="text-center md:text-left">
-                <span className="text-xs font-bold text-slate-400 block">المتبقي المطلوب</span>
-                <span className="text-2xl font-black text-rose-600">
-                  {formatCurrency(gs.remaining_balance || 0)}
-                </span>
-              </div>
-            </div>
+            <button
+              onClick={() => setIsTransferModalOpen(true)}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-98"
+            >
+              <ArrowRightLeft className="w-4 h-4 text-amber-400" />
+              <span>نقل لمجموعة أخرى</span>
+            </button>
+          </div>
+        </div>
 
-            <div className="flex flex-wrap gap-2 mt-2">
-              <button
-                onClick={() => setIsPayModalOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all"
-              >
-                <Plus className="w-4 h-4" />
-                <span>تسجيل دفعة جديدة</span>
-              </button>
+        {/* Financial Overview 3-Pill Grid */}
+        <div className="mt-6 pt-6 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <span className="text-slate-400 text-xs font-bold block">سعر الكورس الإجمالي</span>
+            <span className="text-xl font-black text-slate-800 mt-1 block">
+              {formatCurrency(gs.course_price || 0)}
+            </span>
+          </div>
 
-              <button
-                onClick={() => setIsTransferModalOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs rounded-xl transition-all"
-              >
-                <ArrowRightLeft className="w-4 h-4 text-purple-400" />
-                <span>نقل لمجموعة أخرى</span>
-              </button>
-            </div>
+          <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100">
+            <span className="text-emerald-700 text-xs font-bold block">إجمالي ما تم سداده</span>
+            <span className="text-xl font-black text-emerald-600 mt-1 block">
+              {formatCurrency(gs.total_paid || 0)}
+            </span>
+          </div>
+
+          <div className="p-4 bg-rose-50/50 rounded-2xl border border-rose-100">
+            <span className="text-rose-700 text-xs font-bold block">المبلغ المتبقي المطلوب</span>
+            <span className="text-xl font-black text-rose-600 mt-1 block">
+              {formatCurrency(gs.remaining_balance || 0)}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* PAYMENT HISTORY & RECEIPTS TABLE */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-          <h2 className="font-bold text-base text-slate-900 flex items-center gap-2">
-            <Receipt className="w-5 h-5 text-blue-600" />
-            <span>سجل الدفعات المالية والإيصالات ({payments.length})</span>
-          </h2>
-          <span className="text-xs text-slate-400 font-semibold">إمكانية تعديل أي دفعة أو محفظة فورياً</span>
+      {/* PAYMENTS HISTORY SECTION (DUAL-VIEW: DESKTOP TABLE + MOBILE CARDS) */}
+      <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h2 className="font-black text-sm sm:text-base text-slate-900 flex items-center gap-2">
+              <Receipt className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
+              <span>سجل دفعات الطالب ({payments.length})</span>
+            </h2>
+            <p className="text-xs text-slate-400 font-medium mt-0.5">
+              كافة الدفعات المحصلة، الإيصالات، وتعديل المبالغ
+            </p>
+          </div>
         </div>
 
-        <div className="overflow-x-auto">
-          {payments.length === 0 ? (
-            <div className="p-12 text-center text-slate-400 text-xs font-semibold">
-              لا توجد دفعات مسجلة لهذا الطالب حتى الآن
-            </div>
-          ) : (
-            <table className="w-full text-right text-xs">
-              <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-100">
-                <tr>
-                  <th className="p-4">#</th>
-                  <th className="p-4">المبلغ</th>
-                  <th className="p-4">التاريخ</th>
-                  <th className="p-4">طريقة الدفع</th>
-                  <th className="p-4">جهة / محفظة الاستلام</th>
-                  <th className="p-4">الإيصال M-Receipt</th>
-                  <th className="p-4">الحالة</th>
-                  <th className="p-4 text-left">الإجراءات والتعديل</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {payments.map((pay, idx) => {
-                  const displayAcc = pay.custom_receiving_account || pay.receiving_account?.account_name || 'خزينة السنتر';
+        {payments.length === 0 ? (
+          <div className="p-8 sm:p-12 text-center text-slate-400 text-xs font-semibold">
+            لا توجد دفعات مالية مسجلة لهذا الطالب بعد
+          </div>
+        ) : (
+          <>
+            {/* MOBILE CARDS VIEW (md:hidden) */}
+            <div className="block md:hidden divide-y divide-slate-100">
+              {payments.map(pay => (
+                <div
+                  key={pay.id}
+                  className={`p-4 space-y-2.5 hover:bg-slate-50/70 transition-colors ${
+                    pay.status === 'reversed' ? 'opacity-60 bg-slate-50/50' : ''
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400">#{pay.id.slice(-6)}</span>
+                      <p className="font-black text-base text-emerald-600">
+                        +{formatCurrency(pay.amount)}
+                      </p>
+                      <p className="text-[11px] text-slate-400">{formatDate(pay.payment_date)}</p>
+                    </div>
 
-                  return (
+                    <StatusBadge status={pay.status} type="payment" />
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                    <span>جهة الاستلام: <strong className="text-purple-700">{pay.custom_receiving_account || pay.receiving_account?.account_name || 'السنتر'}</strong></span>
+                    <span>{pay.payment_method}</span>
+                  </div>
+
+                  {pay.notes && (
+                    <p className="text-xs text-slate-600 italic">ملاحظة: {pay.notes}</p>
+                  )}
+
+                  <div className="flex items-center gap-2 pt-2 border-t border-slate-100 text-xs">
+                    <button
+                      onClick={() => {
+                        setActivePaymentForReceipt(pay);
+                        setReceiptModalOpen(true);
+                      }}
+                      className={`flex-1 py-2 px-3 rounded-xl font-bold text-xs inline-flex items-center justify-center gap-1.5 border transition-all ${
+                        pay.receipt_url
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-slate-100 text-slate-600 border-slate-200'
+                      }`}
+                    >
+                      {pay.receipt_url ? (
+                        <>
+                          <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>معاينة الإيصال</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-3.5 h-3.5 text-slate-500" />
+                          <span>رفع إيصال</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => handleOpenEditPayment(pay)}
+                      className="py-2 px-3 bg-purple-50 text-purple-700 hover:bg-purple-100 font-bold rounded-xl border border-purple-200 flex items-center justify-center gap-1"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                      <span>تعديل</span>
+                    </button>
+
+                    {pay.status === 'valid' && (
+                      <button
+                        onClick={() => handleReverse(pay.id)}
+                        className="py-2 px-3 text-rose-600 hover:bg-rose-50 rounded-xl font-bold border border-rose-200 flex items-center justify-center gap-1"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>إلغاء</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* DESKTOP TABLE VIEW (hidden md:block) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-right text-xs">
+                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-100">
+                  <tr>
+                    <th className="p-4">معرف الدفعة</th>
+                    <th className="p-4">المبلغ</th>
+                    <th className="p-4">التاريخ</th>
+                    <th className="p-4">طريقة الدفع</th>
+                    <th className="p-4">جهة الاستلام</th>
+                    <th className="p-4 text-center">الإيصال</th>
+                    <th className="p-4">الحالة</th>
+                    <th className="p-4">ملاحظات</th>
+                    <th className="p-4 text-left">الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {payments.map(pay => (
                     <tr
                       key={pay.id}
                       className={`hover:bg-slate-50/80 transition-colors ${
                         pay.status === 'reversed' ? 'bg-slate-50/60 opacity-60' : ''
                       }`}
                     >
-                      <td className="p-4 font-bold text-slate-400">{idx + 1}</td>
-                      <td className="p-4 font-black text-emerald-600 text-sm">
-                        {formatCurrency(pay.amount)}
-                      </td>
+                      <td className="p-4 font-bold text-slate-400">#{pay.id.slice(-6)}</td>
+                      <td className="p-4 font-black text-emerald-600 text-sm">+{formatCurrency(pay.amount)}</td>
                       <td className="p-4 font-medium text-slate-600">{formatDate(pay.payment_date)}</td>
                       <td className="p-4 font-semibold text-slate-800">{pay.payment_method}</td>
-                      <td className="p-4 font-bold text-purple-700" dir="ltr">
-                        {displayAcc}
+                      <td className="p-4 font-bold text-purple-700">
+                        {pay.custom_receiving_account || pay.receiving_account?.account_name || 'خزينة السنتر'}
                       </td>
-                      <td className="p-4">
-                        {pay.receipt_url ? (
-                          <button
-                            onClick={() => {
-                              setActivePaymentForReceipt(pay);
-                              setReceiptModalOpen(true);
-                            }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 font-bold text-[11px] rounded-lg border border-emerald-200 hover:bg-emerald-100"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>عرض الإيصال</span>
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              setActivePaymentForReceipt(pay);
-                              setReceiptModalOpen(true);
-                            }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-600 font-bold text-[11px] rounded-lg hover:bg-slate-200"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>رفع إيصال</span>
-                          </button>
-                        )}
+                      <td className="p-4 text-center">
+                        <button
+                          onClick={() => {
+                            setActivePaymentForReceipt(pay);
+                            setReceiptModalOpen(true);
+                          }}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl font-bold text-[11px] border transition-all ${
+                            pay.receipt_url
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                              : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
+                          }`}
+                        >
+                          {pay.receipt_url ? (
+                            <>
+                              <FileImage className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>معاينة</span>
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="w-3.5 h-3.5 text-slate-500" />
+                              <span>رفع</span>
+                            </>
+                          )}
+                        </button>
                       </td>
                       <td className="p-4">
                         <StatusBadge status={pay.status} type="payment" />
                       </td>
-                      <td className="p-4 text-left">
+                      <td className="p-4 text-slate-500">{pay.notes || '-'}</td>
+                      <td className="p-4 text-left flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleOpenEditPayment(pay)}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-lg text-[11px] font-bold border border-purple-200"
-                          title="تعديل تفاصيل هذه الدفعة"
+                          className="px-2.5 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 font-bold rounded-xl border border-purple-200 flex items-center gap-1"
                         >
-                          <Edit2 className="w-3.5 h-3.5" />
-                          <span>تعديل الدفعة</span>
+                          <Edit2 className="w-3 h-3" />
+                          <span>تعديل</span>
                         </button>
+                        {pay.status === 'valid' && (
+                          <button
+                            onClick={() => handleReverse(pay.id)}
+                            className="px-2.5 py-1.5 text-rose-600 hover:bg-rose-50 rounded-xl font-bold border border-rose-200 flex items-center gap-1"
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                            <span>إلغاء</span>
+                          </button>
+                        )}
                       </td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-
-      {/* EDIT PAYMENT MODAL (تعديل الدفعة بالكامل) */}
-      {editingPayment && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <h3 className="font-extrabold text-base text-slate-900 flex items-center gap-2">
-                <Edit2 className="w-5 h-5 text-purple-600" />
-                <span>تعديل تفاصيل الدفعة المالية</span>
-              </h3>
-              <button
-                onClick={() => setEditingPayment(null)}
-                className="p-1 rounded-lg text-slate-400 hover:bg-slate-100"
-              >
-                <X className="w-5 h-5" />
-              </button>
+                  ))}
+                </tbody>
+              </table>
             </div>
-
-            <form onSubmit={handleSaveEditPayment} className="mt-6 space-y-4 text-xs">
-              {editPayError && (
-                <div className="p-3 bg-rose-50 text-rose-700 rounded-xl font-semibold">
-                  {editPayError}
-                </div>
-              )}
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">المبلغ المدفوع (EGP) *</label>
-                <input
-                  type="number"
-                  required
-                  min="1"
-                  value={editPayAmount}
-                  onChange={e => setEditPayAmount(Number(e.target.value))}
-                  className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-base font-black text-emerald-600"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">تاريخ الدفع *</label>
-                <input
-                  type="date"
-                  required
-                  value={editPayDate}
-                  onChange={e => setEditPayDate(e.target.value)}
-                  className="w-full p-2.5 border border-slate-200 rounded-xl text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">طريقة الدفع *</label>
-                <select
-                  value={editPayMethod}
-                  onChange={e => setEditPayMethod(e.target.value as PaymentMethod)}
-                  className="w-full p-2.5 border border-slate-200 rounded-xl text-sm font-semibold"
-                >
-                  <option value="Vodafone Cash">Vodafone Cash</option>
-                  <option value="Cash">Cash (نقداً)</option>
-                  <option value="InstaPay">InstaPay</option>
-                  <option value="Bank Transfer">تحويل بنكي</option>
-                </select>
-              </div>
-
-              {/* RECEIVING ACCOUNT / CUSTOM WALLET CHOICE */}
-              <div className="p-3 bg-purple-50/70 rounded-2xl border border-purple-100 space-y-3">
-                <label className="block font-bold text-purple-900 mb-1">جهة / محفظة الاستلام</label>
-
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
-                    <input
-                      type="radio"
-                      name="edit_account_choice"
-                      checked={editAccountOption === 'center_desk'}
-                      onChange={() => setEditAccountOption('center_desk')}
-                      className="w-4 h-4 text-purple-600"
-                    />
-                    <span>خزينة السنتر (Center Desk Cash)</span>
-                  </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
-                    <input
-                      type="radio"
-                      name="edit_account_choice"
-                      checked={editAccountOption === 'custom'}
-                      onChange={() => setEditAccountOption('custom')}
-                      className="w-4 h-4 text-purple-600"
-                    />
-                    <span>رقم محفظة / حساب آخر (كتابة يدويّة حرة)</span>
-                  </label>
-                </div>
-
-                {editAccountOption === 'custom' && (
-                  <div className="pt-2 animate-in fade-in duration-200">
-                    <label className="block font-bold text-purple-900 mb-1">
-                      اكتب رقم المحفظة / الحساب الذي استلم المبلغ *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={editCustomWallet}
-                      onChange={e => setEditCustomWallet(e.target.value)}
-                      placeholder="مثال: 01024274489"
-                      className="w-full p-2.5 bg-white border border-purple-300 rounded-xl text-sm font-bold text-purple-800"
-                      dir="ltr"
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">حالة الدفعة *</label>
-                <select
-                  value={editPayStatus}
-                  onChange={e => setEditPayStatus(e.target.value as 'valid' | 'reversed')}
-                  className="w-full p-2.5 border border-slate-200 rounded-xl text-sm font-semibold"
-                >
-                  <option value="valid">صحيحة ومعتمدة (Valid)</option>
-                  <option value="reversed">ملغاة ومسترجعة (Reversed)</option>
-                </select>
-              </div>
-
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setEditingPayment(null)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-md shadow-purple-600/20"
-                >
-                  حفظ التعديلات
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </div>
 
       {/* RECORD PAYMENT MODAL */}
       {isPayModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <h3 className="font-extrabold text-base text-slate-900 flex items-center gap-2">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 my-8 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+              <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-emerald-600" />
-                <span>تسجيل دفعة مالية للطالب</span>
+                <span>تسجيل دفعة مالية جديدة للطالب</span>
               </h3>
-              <button
-                onClick={() => setIsPayModalOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:bg-slate-100"
-              >
+              <button onClick={() => setIsPayModalOpen(false)} className="p-1.5 rounded-full text-slate-400 hover:bg-slate-100">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleRecordPayment} className="mt-6 space-y-4 text-xs">
+            <form onSubmit={handleRecordPayment} className="mt-4 space-y-3.5 text-xs">
               {payError && (
-                <div className="p-3 bg-rose-50 text-rose-700 rounded-xl font-semibold">
+                <div className="p-3 bg-rose-50 text-rose-700 rounded-xl font-bold border border-rose-200">
                   {payError}
                 </div>
               )}
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">المبلغ المدفوع (EGP) *</label>
-                <input
-                  type="number"
-                  required
-                  min="1"
-                  value={payAmount}
-                  onChange={e => setPayAmount(Number(e.target.value))}
-                  className="w-full p-2.5 border border-slate-200 rounded-xl text-base font-black text-emerald-600"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">المبلغ (EGP) *</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    value={payAmount}
+                    onChange={e => setPayAmount(Number(e.target.value))}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-base font-black text-emerald-600 focus:ring-2 focus:ring-emerald-500"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1 font-semibold">المتبقي: {formatCurrency(gs.remaining_balance || 0)}</p>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">تاريخ الدفع</label>
+                  <input
+                    type="date"
+                    value={payDate}
+                    onChange={e => setPayDate(e.target.value)}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">تاريخ الدفع *</label>
-                <input
-                  type="date"
-                  required
-                  value={payDate}
-                  onChange={e => setPayDate(e.target.value)}
-                  className="w-full p-2.5 border border-slate-200 rounded-xl text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">طريقة الدفع *</label>
+                <label className="block font-bold text-slate-700 mb-1">طريقة الدفع</label>
                 <select
                   value={payMethod}
                   onChange={e => setPayMethod(e.target.value as PaymentMethod)}
-                  className="w-full p-2.5 border border-slate-200 rounded-xl text-sm font-semibold"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold"
                 >
                   <option value="Vodafone Cash">Vodafone Cash</option>
-                  <option value="Cash">Cash (نقداً)</option>
+                  <option value="Cash">نقداً بالسنتر (Cash)</option>
                   <option value="InstaPay">InstaPay</option>
                   <option value="Bank Transfer">تحويل بنكي</option>
                 </select>
               </div>
 
-              {/* RECEIVING ACCOUNT / CUSTOM WALLET */}
-              <div className="p-3 bg-purple-50/70 rounded-2xl border border-purple-100 space-y-3">
-                <label className="block font-bold text-purple-900 mb-1">جهة / محفظة استلام النقدية</label>
-
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
-                    <input
-                      type="radio"
-                      name="new_pay_acc_choice"
-                      checked={payAccountOption === 'center_desk'}
-                      onChange={() => setPayAccountOption('center_desk')}
-                      className="w-4 h-4 text-purple-600"
-                    />
-                    <span>خزينة السنتر (Center Desk Cash)</span>
-                  </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
-                    <input
-                      type="radio"
-                      name="new_pay_acc_choice"
-                      checked={payAccountOption === 'custom'}
-                      onChange={() => setPayAccountOption('custom')}
-                      className="w-4 h-4 text-purple-600"
-                    />
-                    <span>رقم محفظة / حساب آخر (كتابة يدويّة حرة)</span>
-                  </label>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1.5">جهة استلام النقدية (Destination)</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPayAccountOption('center_desk')}
+                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                      payAccountOption === 'center_desk'
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-slate-50 text-slate-600 border-slate-200'
+                    }`}
+                  >
+                    خزينة السنتر (Desk)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPayAccountOption('custom')}
+                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                      payAccountOption === 'custom'
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-slate-50 text-slate-600 border-slate-200'
+                    }`}
+                  >
+                    محفظة كاش أخرى
+                  </button>
                 </div>
 
                 {payAccountOption === 'custom' && (
-                  <div className="pt-2 animate-in fade-in duration-200">
-                    <label className="block font-bold text-purple-900 mb-1">
-                      اكتب رقم المحفظة / الحساب الذي استلم الدفعة *
-                    </label>
+                  <div className="mt-2">
                     <input
                       type="text"
-                      required
+                      placeholder="رقم المحفظة (مثال: 01011112222)"
                       value={payCustomWallet}
                       onChange={e => setPayCustomWallet(e.target.value)}
-                      placeholder="مثال: 01024274489"
-                      className="w-full p-2.5 bg-white border border-purple-300 rounded-xl text-sm font-bold text-purple-800"
-                      dir="ltr"
+                      className="w-full p-2.5 bg-slate-50 border border-blue-300 rounded-xl text-xs font-bold text-blue-700"
                     />
                   </div>
                 )}
@@ -652,26 +646,26 @@ export default function StudentProfilePage() {
                 <label className="block font-bold text-slate-700 mb-1">ملاحظات إضافية</label>
                 <input
                   type="text"
-                  placeholder="مثال: القسط الثاني"
+                  placeholder="ملاحظات اختيارية..."
                   value={payNotes}
                   onChange={e => setPayNotes(e.target.value)}
-                  className="w-full p-2.5 border border-slate-200 rounded-xl text-sm"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
                 />
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsPayModalOpen(false)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold"
+                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-bold text-xs"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-md shadow-emerald-600/20"
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md shadow-emerald-600/25 active:scale-98"
                 >
-                  تأكيد وحفظ الدفعة
+                  تأكيد تسجيل الدفعة
                 </button>
               </div>
             </form>
@@ -679,70 +673,201 @@ export default function StudentProfilePage() {
         </div>
       )}
 
-      {/* TRANSFER MODAL */}
-      {isTransferModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <h3 className="font-extrabold text-base text-slate-900 flex items-center gap-2">
-                <ArrowRightLeft className="w-5 h-5 text-purple-600" />
-                <span>نقل الطالب لمجموعة أخرى</span>
+      {/* EDIT PAYMENT MODAL */}
+      {editingPayment && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 my-8 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+              <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
+                <Edit2 className="w-4 h-4 text-purple-600" />
+                <span>تعديل تفاصيل الدفعة #{editingPayment.id.slice(-6)}</span>
               </h3>
-              <button
-                onClick={() => setIsTransferModalOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:bg-slate-100"
-              >
+              <button onClick={() => setEditingPayment(null)} className="p-1.5 rounded-full text-slate-400 hover:bg-slate-100">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleTransfer} className="mt-6 space-y-4 text-xs">
-              {transferError && (
-                <div className="p-3 bg-rose-50 text-rose-700 rounded-xl font-semibold">
-                  {transferError}
+            <form onSubmit={handleSaveEditPayment} className="mt-4 space-y-3.5 text-xs">
+              {editPayError && (
+                <div className="p-3 bg-rose-50 text-rose-700 rounded-xl font-bold border border-rose-200">
+                  {editPayError}
                 </div>
               )}
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">المجموعة المحول إليها *</label>
-                <select
-                  value={targetGroupId}
-                  onChange={e => setTargetGroupId(e.target.value)}
-                  className="w-full p-2.5 border border-slate-200 rounded-xl text-sm font-semibold"
-                >
-                  {groups.map(g => (
-                    <option key={g.id} value={g.id}>
-                      مجموعة #{g.group_number} ({g.course_name} - {g.trainer_name})
-                    </option>
-                  ))}
-                </select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">المبلغ (EGP) *</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    value={editPayAmount}
+                    onChange={e => setEditPayAmount(Number(e.target.value))}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-base font-black text-emerald-600 focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">تاريخ الدفعة</label>
+                  <input
+                    type="date"
+                    value={editPayDate}
+                    onChange={e => setEditPayDate(e.target.value)}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">طريقة الدفع</label>
+                  <select
+                    value={editPayMethod}
+                    onChange={e => setEditPayMethod(e.target.value as PaymentMethod)}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold"
+                  >
+                    <option value="Vodafone Cash">Vodafone Cash</option>
+                    <option value="Cash">نقداً بالسنتر (Cash)</option>
+                    <option value="InstaPay">InstaPay</option>
+                    <option value="Bank Transfer">تحويل بنكي</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">حالة المعاملة</label>
+                  <select
+                    value={editPayStatus}
+                    onChange={e => setEditPayStatus(e.target.value as any)}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+                  >
+                    <option value="valid">صحيحة ومعتمدة</option>
+                    <option value="reversed">ملغاة ومصححة</option>
+                  </select>
+                </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">سبب النقل *</label>
-                <textarea
-                  required
-                  rows={3}
-                  value={transferReason}
-                  onChange={e => setTransferReason(e.target.value)}
-                  placeholder="كتابة سبب نقل الطالب للحفاظ على السجل المالي والملاحظات..."
-                  className="w-full p-2.5 border border-slate-200 rounded-xl text-sm"
-                />
+                <label className="block font-bold text-slate-700 mb-1.5">جهة استلام النقدية</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditAccountOption('center_desk')}
+                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                      editAccountOption === 'center_desk'
+                        ? 'bg-purple-600 text-white border-purple-600'
+                        : 'bg-slate-50 text-slate-600 border-slate-200'
+                    }`}
+                  >
+                    خزينة السنتر (Desk)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditAccountOption('custom')}
+                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                      editAccountOption === 'custom'
+                        ? 'bg-purple-600 text-white border-purple-600'
+                        : 'bg-slate-50 text-slate-600 border-slate-200'
+                    }`}
+                  >
+                    محفظة كاش أخرى
+                  </button>
+                </div>
+
+                {editAccountOption === 'custom' && (
+                  <div className="mt-2">
+                    <input
+                      type="text"
+                      placeholder="رقم المحفظة (مثال: 01011112222)"
+                      value={editCustomWallet}
+                      onChange={e => setEditCustomWallet(e.target.value)}
+                      className="w-full p-2.5 bg-slate-50 border border-purple-300 rounded-xl text-xs font-bold text-purple-700"
+                    />
+                  </div>
+                )}
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => setIsTransferModalOpen(false)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold"
+                  onClick={() => setEditingPayment(null)}
+                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-bold text-xs"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-slate-900 hover:bg-blue-600 text-white rounded-xl font-bold shadow-md"
+                  className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs shadow-md shadow-purple-600/25 active:scale-98"
                 >
-                  تأكيد النقل
+                  حفظ تعديل الدفعة
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* TRANSFER STUDENT MODAL */}
+      {isTransferModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 my-8 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+              <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
+                <ArrowRightLeft className="w-5 h-5 text-amber-500" />
+                <span>نقل الطالب إلى مجموعة أخرى</span>
+              </h3>
+              <button onClick={() => setIsTransferModalOpen(false)} className="p-1.5 rounded-full text-slate-400 hover:bg-slate-100">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleTransfer} className="mt-4 space-y-4 text-xs">
+              {transferError && (
+                <div className="p-3 bg-rose-50 text-rose-700 rounded-xl font-bold border border-rose-200">
+                  {transferError}
+                </div>
+              )}
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">اختر المجموعة الدراسية الجديدة *</label>
+                <select
+                  value={targetGroupId}
+                  onChange={e => setTargetGroupId(e.target.value)}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800"
+                >
+                  {groups
+                    .filter(g => g.id !== gs.group_id)
+                    .map(g => (
+                      <option key={g.id} value={g.id}>
+                        مجموعة #{g.group_number} ({g.course_name} - {g.trainer_name})
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">سبب التحويل / النقل *</label>
+                <textarea
+                  rows={3}
+                  value={transferReason}
+                  onChange={e => setTransferReason(e.target.value)}
+                  placeholder="اكتب سبب نقل الطالب للمجموعة الجديدة..."
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsTransferModalOpen(false)}
+                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-bold text-xs"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs shadow-md shadow-amber-600/25 active:scale-98"
+                >
+                  تأكيد النقل للمجموعة
                 </button>
               </div>
             </form>
