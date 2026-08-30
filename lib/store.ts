@@ -7,8 +7,8 @@ import {
 export const INITIAL_USERS: UserProfile[] = [
   {
     id: 'usr-manager-1',
-    full_name: 'د / سمر حمدي مدير SHLA',
-    email: 'manager@center.com',
+    full_name: 'د / سمر حمدي مدير SHLA (Dr. Samar Hamdy)',
+    email: 'samar@center.com',
     phone: '01000000001',
     role: 'manager',
     is_active: true,
