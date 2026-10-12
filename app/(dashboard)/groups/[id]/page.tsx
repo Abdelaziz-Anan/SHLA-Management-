@@ -50,6 +50,7 @@ export default function GroupDetailsPage() {
   const { t } = useLanguage();
 
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const isManager = currentUser?.role === 'manager';
   const [group, setGroup] = useState<Group | null>(null);
   const [sessions, setSessions] = useState<GroupSession[]>([]);
   const [students, setStudents] = useState<GroupStudent[]>([]);
@@ -137,6 +138,10 @@ export default function GroupDetailsPage() {
   };
 
   const handleDeleteEnrolledStudent = (gsId: string, studentName: string) => {
+    if (!isManager) {
+      alert('عذراً، صلاحية حذف الطالب مقتصرة على مديرة الأكاديمية فقط');
+      return;
+    }
     if (!confirm(`هل أنتِ متأكدة من حذف الطالب (${studentName}) من هذه المجموعة وكافة دفعاته المالية؟`)) return;
     try {
       deleteStudentEnrollment(gsId);
@@ -564,13 +569,15 @@ export default function GroupDetailsPage() {
                         <span>تعديل</span>
                       </button>
 
-                      <button
-                        onClick={() => handleDeleteEnrolledStudent(gs.id, gs.student?.full_name || 'الطالب')}
-                        className="p-2 text-rose-500 hover:bg-rose-50 hover:text-rose-700 rounded-xl border border-slate-200 hover:border-rose-200 transition-colors"
-                        title="حذف هذا الطالب"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {isManager && (
+                        <button
+                          onClick={() => handleDeleteEnrolledStudent(gs.id, gs.student?.full_name || 'الطالب')}
+                          className="p-2 text-rose-500 hover:bg-rose-50 hover:text-rose-700 rounded-xl border border-slate-200 hover:border-rose-200 transition-colors"
+                          title="حذف هذا الطالب (المديرة فقط)"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
@@ -653,13 +660,15 @@ export default function GroupDetailsPage() {
                               <span>تعديل</span>
                             </button>
 
-                            <button
-                              onClick={() => handleDeleteEnrolledStudent(gs.id, gs.student?.full_name || 'الطالب')}
-                              className="p-1.5 text-rose-500 hover:bg-rose-50 hover:text-rose-700 rounded-xl border border-slate-200 hover:border-rose-200 transition-colors"
-                              title="حذف هذا الطالب"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                            {isManager && (
+                              <button
+                                onClick={() => handleDeleteEnrolledStudent(gs.id, gs.student?.full_name || 'الطالب')}
+                                className="p-1.5 text-rose-500 hover:bg-rose-50 hover:text-rose-700 rounded-xl border border-slate-200 hover:border-rose-200 transition-colors"
+                                title="حذف هذا الطالب (المديرة فقط)"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>

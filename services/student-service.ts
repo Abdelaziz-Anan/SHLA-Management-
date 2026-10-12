@@ -392,6 +392,10 @@ export function transferStudentGroup(
 
 export function deleteStudentEnrollment(groupStudentId: string): void {
   const currentUser = getCurrentUser();
+  if (currentUser && currentUser.role !== 'manager') {
+    throw new Error('عذراً، صلاحية حذف الطالب مقتصرة على مديرة الأكاديمية فقط');
+  }
+
   const groupStudents = store.getGroupStudents();
   const target = groupStudents.find(gs => gs.id === groupStudentId);
   if (!target) throw new Error('تسجيل الطالب غير موجود');

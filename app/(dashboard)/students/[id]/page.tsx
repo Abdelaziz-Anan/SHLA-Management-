@@ -12,6 +12,7 @@ import {
   updatePaymentReceipt,
 } from '@/services/payment-service';
 import { getGroups } from '@/services/group-service';
+import { getCurrentUser } from '@/services/auth-service';
 import { store } from '@/lib/store';
 import { GroupStudent, Payment, PaymentMethod, Group } from '@/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
@@ -82,8 +83,12 @@ export default function StudentProfilePage() {
   const [transferReason, setTransferReason] = useState<string>('تغيير الموعد المناسب للطالب');
   const [transferError, setTransferError] = useState<string>('');
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const isManager = currentUser?.role === 'manager';
+
   const loadData = () => {
     if (!gsId) return;
+    setCurrentUser(getCurrentUser());
     const detail = getGroupStudentById(gsId);
     setGs(detail);
     if (detail) {
@@ -104,6 +109,10 @@ export default function StudentProfilePage() {
   }, [gsId]);
 
   const handleDeleteStudent = () => {
+    if (!isManager) {
+      alert('عذراً، صلاحية حذف الطالب مقتصرة على مديرة الأكاديمية فقط');
+      return;
+    }
     if (!gs) return;
     const studentName = gs.student?.full_name || 'هذا الطالب';
     if (!confirm(`هل أنتِ متأكدة من حذف الطالب (${studentName}) نهائياً مع كافة دفعاته المالية؟`)) return;
@@ -290,14 +299,16 @@ export default function StudentProfilePage() {
           <span>العودة لجميع الطلاب</span>
         </Link>
 
-        <button
-          onClick={handleDeleteStudent}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-all active:scale-98"
-          title="حذف هذا الطالب نهائياً من السيستم"
-        >
-          <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-          <span>حذف الطالب</span>
-        </button>
+        {isManager && (
+          <button
+            onClick={handleDeleteStudent}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-all active:scale-98"
+            title="حذف هذا الطالب نهائياً من السيستم (المديرة فقط)"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+            <span>حذف الطالب</span>
+          </button>
+        )}
       </div>
 
       {/* Student Profile Header Card */}
@@ -363,14 +374,16 @@ export default function StudentProfilePage() {
               <span>نقل لمجموعة أخرى</span>
             </button>
 
-            <button
-              onClick={handleDeleteStudent}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-all active:scale-98"
-              title="حذف هذا الطالب نهائياً من السيستم"
-            >
-              <Trash2 className="w-4 h-4 text-rose-600" />
-              <span>حذف الطالب</span>
-            </button>
+            {isManager && (
+              <button
+                onClick={handleDeleteStudent}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-all active:scale-98"
+                title="حذف هذا الطالب نهائياً من السيستم (المديرة فقط)"
+              >
+                <Trash2 className="w-4 h-4 text-rose-600" />
+                <span>حذف الطالب</span>
+              </button>
+            )}
           </div>
         </div>
 

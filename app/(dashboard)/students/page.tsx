@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { getGroupStudentsWithDetails, addStudentToGroup, checkPhoneDuplicate, deleteStudentEnrollment } from '@/services/student-service';
 import { getGroups } from '@/services/group-service';
+import { getCurrentUser } from '@/services/auth-service';
 import { store } from '@/lib/store';
 import { GroupStudent, Group, BookingMethod, PaymentMethod } from '@/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
@@ -49,8 +50,12 @@ export default function StudentsPage() {
 
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
   const [formError, setFormError] = useState('');
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  const isManager = currentUser?.role === 'manager';
 
   const loadData = () => {
+    setCurrentUser(getCurrentUser());
     setStudents(getGroupStudentsWithDetails());
     const activeGroups = getGroups({ status: 'active' });
     setGroups(activeGroups);
@@ -75,6 +80,10 @@ export default function StudentsPage() {
   const handleDeleteStudent = (e: React.MouseEvent, gsId: string, studentName: string) => {
     e.stopPropagation();
     e.preventDefault();
+    if (!isManager) {
+      alert('عذراً، صلاحية حذف الطالب مقتصرة على مديرة الأكاديمية فقط');
+      return;
+    }
     if (!confirm(`هل أنتِ متأكدة من حذف الطالب (${studentName}) نهائياً مع كافة دفعاته المالية؟`)) return;
     try {
       deleteStudentEnrollment(gsId);
@@ -367,13 +376,15 @@ export default function StudentsPage() {
                   <ChevronLeft className="w-4 h-4" />
                 </Link>
 
-                <button
-                  onClick={(e) => handleDeleteStudent(e, gs.id, gs.student?.full_name || 'الطالب')}
-                  className="p-2.5 text-rose-500 hover:bg-rose-50 hover:text-rose-700 rounded-xl border border-slate-200 hover:border-rose-200 transition-colors"
-                  title="حذف هذا الطالب نهائياً"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                {isManager && (
+                  <button
+                    onClick={(e) => handleDeleteStudent(e, gs.id, gs.student?.full_name || 'الطالب')}
+                    className="p-2.5 text-rose-500 hover:bg-rose-50 hover:text-rose-700 rounded-xl border border-slate-200 hover:border-rose-200 transition-colors"
+                    title="حذف هذا الطالب نهائياً (المديرة فقط)"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
             );
