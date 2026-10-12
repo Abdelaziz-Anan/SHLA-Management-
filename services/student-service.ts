@@ -389,3 +389,35 @@ export function transferStudentGroup(
     entity_id: oldEnrollment.student_id,
   });
 }
+
+export function deleteStudentEnrollment(groupStudentId: string): void {
+  const currentUser = getCurrentUser();
+  const groupStudents = store.getGroupStudents();
+  const target = groupStudents.find(gs => gs.id === groupStudentId);
+  if (!target) throw new Error('تسجيل الطالب غير موجود');
+
+  const students = store.getStudents();
+  const student = students.find(s => s.id === target.student_id);
+
+  // 1. Remove enrollment
+  store.saveGroupStudents(groupStudents.filter(gs => gs.id !== groupStudentId));
+
+  // 2. Remove associated payments
+  const payments = store.getPayments();
+  store.savePayments(payments.filter(p => p.group_student_id !== groupStudentId));
+
+  // 3. Remove student record if no remaining enrollments
+  const remainingEnrollments = groupStudents.filter(gs => gs.student_id === target.student_id && gs.id !== groupStudentId);
+  if (remainingEnrollments.length === 0) {
+    store.saveStudents(students.filter(s => s.id !== target.student_id));
+  }
+
+  store.addAuditLog({
+    user_id: currentUser?.id,
+    user_name: currentUser?.full_name,
+    action: `حذف الطالب (${student?.full_name || 'طالب'}) نهائياً مع كافة دفعاته المالية`,
+    entity_type: 'StudentDelete',
+    entity_id: target.student_id,
+    old_data: { target, student },
+  });
+}

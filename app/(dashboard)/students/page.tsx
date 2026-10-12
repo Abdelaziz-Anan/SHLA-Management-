@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { getGroupStudentsWithDetails, addStudentToGroup, checkPhoneDuplicate } from '@/services/student-service';
+import { getGroupStudentsWithDetails, addStudentToGroup, checkPhoneDuplicate, deleteStudentEnrollment } from '@/services/student-service';
 import { getGroups } from '@/services/group-service';
 import { store } from '@/lib/store';
 import { GroupStudent, Group, BookingMethod, PaymentMethod } from '@/types';
@@ -23,6 +23,7 @@ import {
   Download,
   Filter,
   MessageCircle,
+  Trash2,
 } from 'lucide-react';
 
 export default function StudentsPage() {
@@ -70,6 +71,19 @@ export default function StudentsPage() {
 
     return () => window.removeEventListener('center_sys_sync', handleSync);
   }, []);
+
+  const handleDeleteStudent = (e: React.MouseEvent, gsId: string, studentName: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!confirm(`هل أنتِ متأكدة من حذف الطالب (${studentName}) نهائياً مع كافة دفعاته المالية؟`)) return;
+    try {
+      deleteStudentEnrollment(gsId);
+      loadData();
+      alert('تم حذف الطالب بنجاح');
+    } catch (err: any) {
+      alert(err.message || 'فشل حذف الطالب');
+    }
+  };
 
   // Optimized memoized filter
   const filteredStudents = useMemo(() => {
@@ -342,16 +356,24 @@ export default function StudentsPage() {
                 </div>
               </div>
 
-              {/* Action Button */}
-              <div className="mt-4 pt-3 border-t border-slate-100">
+              {/* Action Buttons */}
+              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2">
                 <Link
                   href={`/students/${gs.id}`}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 font-bold text-xs rounded-xl transition-all active:scale-98"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 font-bold text-xs rounded-xl transition-all active:scale-98"
                 >
                   <CreditCard className="w-4 h-4" />
-                  <span>الملف الشخصي وتسجيل الدفعات</span>
+                  <span>الملف الشخصي والدفعات</span>
                   <ChevronLeft className="w-4 h-4" />
                 </Link>
+
+                <button
+                  onClick={(e) => handleDeleteStudent(e, gs.id, gs.student?.full_name || 'الطالب')}
+                  className="p-2.5 text-rose-500 hover:bg-rose-50 hover:text-rose-700 rounded-xl border border-slate-200 hover:border-rose-200 transition-colors"
+                  title="حذف هذا الطالب نهائياً"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             </div>
             );

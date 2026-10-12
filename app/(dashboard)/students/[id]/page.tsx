@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { getGroupStudentById, transferStudentGroup } from '@/services/student-service';
+import { useParams, useRouter } from 'next/navigation';
+import { getGroupStudentById, transferStudentGroup, deleteStudentEnrollment } from '@/services/student-service';
 import {
   getPaymentsByGroupStudent,
   recordPayment,
@@ -38,9 +38,11 @@ import {
   MessageCircle,
   Clock,
   FileImage,
+  Trash2,
 } from 'lucide-react';
 
 export default function StudentProfilePage() {
+  const router = useRouter();
   const params = useParams();
   const gsId = params.id as string;
   const { t } = useLanguage();
@@ -96,7 +98,23 @@ export default function StudentProfilePage() {
 
   useEffect(() => {
     loadData();
+    const handleSync = () => loadData();
+    window.addEventListener('center_sys_sync', handleSync);
+    return () => window.removeEventListener('center_sys_sync', handleSync);
   }, [gsId]);
+
+  const handleDeleteStudent = () => {
+    if (!gs) return;
+    const studentName = gs.student?.full_name || 'هذا الطالب';
+    if (!confirm(`هل أنتِ متأكدة من حذف الطالب (${studentName}) نهائياً مع كافة دفعاته المالية؟`)) return;
+    try {
+      deleteStudentEnrollment(gs.id);
+      alert('تم حذف الطالب وسجل مدفوعاته بنجاح');
+      router.push('/students');
+    } catch (e: any) {
+      alert(e.message || 'فشل حذف الطالب');
+    }
+  };
 
   const handleRecordPayment = (e: React.FormEvent) => {
     e.preventDefault();
@@ -262,7 +280,7 @@ export default function StudentProfilePage() {
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-200">
-      {/* Back Navigation */}
+      {/* Back Navigation & Top Actions */}
       <div className="flex items-center justify-between">
         <Link
           href="/students"
@@ -271,6 +289,15 @@ export default function StudentProfilePage() {
           <ArrowRight className="w-4 h-4" />
           <span>العودة لجميع الطلاب</span>
         </Link>
+
+        <button
+          onClick={handleDeleteStudent}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-all active:scale-98"
+          title="حذف هذا الطالب نهائياً من السيستم"
+        >
+          <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+          <span>حذف الطالب</span>
+        </button>
       </div>
 
       {/* Student Profile Header Card */}
@@ -318,7 +345,7 @@ export default function StudentProfilePage() {
             </div>
           </div>
 
-          {/* Action Buttons: New Payment & Transfer Group */}
+          {/* Action Buttons: New Payment & Transfer Group & Delete Student */}
           <div className="flex flex-col sm:flex-row items-stretch md:items-center gap-2.5 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
             <button
               onClick={() => setIsPayModalOpen(true)}
@@ -334,6 +361,15 @@ export default function StudentProfilePage() {
             >
               <ArrowRightLeft className="w-4 h-4 text-amber-400" />
               <span>نقل لمجموعة أخرى</span>
+            </button>
+
+            <button
+              onClick={handleDeleteStudent}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-all active:scale-98"
+              title="حذف هذا الطالب نهائياً من السيستم"
+            >
+              <Trash2 className="w-4 h-4 text-rose-600" />
+              <span>حذف الطالب</span>
             </button>
           </div>
         </div>

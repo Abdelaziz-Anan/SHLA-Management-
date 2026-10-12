@@ -13,7 +13,7 @@ import {
   deleteGroup,
 } from '@/services/group-service';
 import { getCurrentUser } from '@/services/auth-service';
-import { getGroupStudentsWithDetails, updateStudentEnrollmentDetails } from '@/services/student-service';
+import { getGroupStudentsWithDetails, updateStudentEnrollmentDetails, deleteStudentEnrollment } from '@/services/student-service';
 import { updatePaymentReceipt } from '@/services/payment-service';
 import { Group, GroupSession, GroupStudent, BookingMethod, Payment } from '@/types';
 import { formatCurrency, formatDate, getPaymentStatus } from '@/lib/utils';
@@ -133,6 +133,17 @@ export default function GroupDetailsPage() {
       loadData();
     } catch (e: any) {
       alert(e.message || 'فشل حذف المحاضرة');
+    }
+  };
+
+  const handleDeleteEnrolledStudent = (gsId: string, studentName: string) => {
+    if (!confirm(`هل أنتِ متأكدة من حذف الطالب (${studentName}) من هذه المجموعة وكافة دفعاته المالية؟`)) return;
+    try {
+      deleteStudentEnrollment(gsId);
+      loadData();
+      alert('تم حذف الطالب بنجاح');
+    } catch (e: any) {
+      alert(e.message || 'فشل حذف الطالب');
     }
   };
 
@@ -547,10 +558,18 @@ export default function GroupDetailsPage() {
 
                       <button
                         onClick={() => handleOpenRowEdit(gs)}
-                        className="py-2 px-4 bg-purple-50 text-purple-700 hover:bg-purple-100 font-bold text-xs rounded-xl border border-purple-200 flex items-center justify-center gap-1"
+                        className="py-2 px-3 bg-purple-50 text-purple-700 hover:bg-purple-100 font-bold text-xs rounded-xl border border-purple-200 flex items-center justify-center gap-1"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                         <span>تعديل</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteEnrolledStudent(gs.id, gs.student?.full_name || 'الطالب')}
+                        className="p-2 text-rose-500 hover:bg-rose-50 hover:text-rose-700 rounded-xl border border-slate-200 hover:border-rose-200 transition-colors"
+                        title="حذف هذا الطالب"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -625,13 +644,23 @@ export default function GroupDetailsPage() {
                           <StatusBadge status={gs.payment_status || 'Not Paid'} type="payment" />
                         </td>
                         <td className="p-4 text-left">
-                          <button
-                            onClick={() => handleOpenRowEdit(gs)}
-                            className="px-2.5 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 font-bold rounded-xl transition-colors border border-purple-200 flex items-center gap-1"
-                          >
-                            <Edit2 className="w-3 h-3" />
-                            <span>تعديل السطر</span>
-                          </button>
+                          <div className="flex items-center gap-1.5 justify-end">
+                            <button
+                              onClick={() => handleOpenRowEdit(gs)}
+                              className="px-2.5 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 font-bold rounded-xl transition-colors border border-purple-200 flex items-center gap-1"
+                            >
+                              <Edit2 className="w-3 h-3" />
+                              <span>تعديل</span>
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteEnrolledStudent(gs.id, gs.student?.full_name || 'الطالب')}
+                              className="p-1.5 text-rose-500 hover:bg-rose-50 hover:text-rose-700 rounded-xl border border-slate-200 hover:border-rose-200 transition-colors"
+                              title="حذف هذا الطالب"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
