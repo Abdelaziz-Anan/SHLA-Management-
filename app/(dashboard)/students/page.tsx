@@ -60,10 +60,15 @@ export default function StudentsPage() {
 
   useEffect(() => {
     loadData();
+    const handleSync = () => loadData();
+    window.addEventListener('center_sys_sync', handleSync);
+
     const params = new URLSearchParams(window.location.search);
     if (params.get('action') === 'new') {
       setIsModalOpen(true);
     }
+
+    return () => window.removeEventListener('center_sys_sync', handleSync);
   }, []);
 
   // Optimized memoized filter

@@ -31,11 +31,17 @@ export default function DashboardPage() {
   const [coverUrl, setCoverUrl] = useState<string>('/cover.jpeg');
 
   useEffect(() => {
-    setSummary(getFinanceSummary());
-    setGroups(getGroups());
-    const center = store.getCenter();
-    setCoverUrl(center.cover_url || '/cover.jpeg');
-    setPayments(store.getPayments());
+    const loadDashboardData = () => {
+      setSummary(getFinanceSummary());
+      setGroups(getGroups());
+      const center = store.getCenter();
+      setCoverUrl(center.cover_url || '/cover.jpeg');
+      setPayments(store.getPayments());
+    };
+
+    loadDashboardData();
+    window.addEventListener('center_sys_sync', loadDashboardData);
+    return () => window.removeEventListener('center_sys_sync', loadDashboardData);
   }, []);
 
   // Memoize recent enriched payments to optimize performance

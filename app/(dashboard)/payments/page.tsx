@@ -54,6 +54,9 @@ export default function PaymentsPage() {
 
   useEffect(() => {
     loadData();
+    const handleSync = () => loadData();
+    window.addEventListener('center_sys_sync', handleSync);
+    return () => window.removeEventListener('center_sys_sync', handleSync);
   }, []);
 
   // Performance-optimized filter

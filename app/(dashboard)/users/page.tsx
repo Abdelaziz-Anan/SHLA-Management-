@@ -52,6 +52,11 @@ export default function UsersPage() {
 
   useEffect(() => {
     loadData();
+    const handleSync = () => {
+      loadData();
+    };
+    window.addEventListener('center_sys_sync', handleSync);
+    return () => window.removeEventListener('center_sys_sync', handleSync);
   }, []);
 
   const handleCreateUser = (e: React.FormEvent) => {

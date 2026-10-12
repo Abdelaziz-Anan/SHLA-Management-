@@ -2,6 +2,7 @@ import {
   UserProfile, CenterInfo, PaymentAccount, Group, GroupSession, 
   Student, GroupStudent, Payment, Settlement, AuditLog, FinanceSummary 
 } from '@/types';
+import { getSupabase } from './supabase/client';
 
 // Default 3 Seed User Accounts
 export const INITIAL_USERS: UserProfile[] = [
@@ -277,10 +278,106 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
   }
 ];
 
-// Helper Local Storage State Management Engine with In-Memory Write-Through Cache
+// Helper Cloud + Local Storage Hybrid State Management Engine
 class SystemStore {
   private isBrowser = typeof window !== 'undefined';
   private cache = new Map<string, any>();
+  private hasInitializedCloud = false;
+
+  constructor() {
+    if (this.isBrowser) {
+      setTimeout(() => {
+        this.initCloud();
+      }, 50);
+    }
+  }
+
+  async initCloud() {
+    if (this.hasInitializedCloud || !this.isBrowser) return;
+    this.hasInitializedCloud = true;
+    await this.syncFromCloud();
+    this.setupRealtime();
+  }
+
+  async syncFromCloud() {
+    if (!this.isBrowser) return;
+    const supabase = getSupabase();
+    if (!supabase) return;
+
+    try {
+      const { data, error } = await supabase.from('app_store').select('*');
+      if (error) {
+        return;
+      }
+
+      if (data && data.length > 0) {
+        let hasChanges = false;
+        for (const row of data) {
+          if (row.key && row.value !== undefined) {
+            this.cache.set(row.key, row.value);
+            try {
+              localStorage.setItem(`center_sys_${row.key}`, JSON.stringify(row.value));
+            } catch {}
+            hasChanges = true;
+          }
+        }
+        if (hasChanges) {
+          window.dispatchEvent(new CustomEvent('center_sys_sync', { detail: { all: true } }));
+        }
+      }
+    } catch (e) {
+      console.warn('Supabase cloud sync notice:', e);
+    }
+  }
+
+  setupRealtime() {
+    if (!this.isBrowser) return;
+    const supabase = getSupabase();
+    if (!supabase) return;
+
+    try {
+      supabase
+        .channel('app_store_sync_channel')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'app_store' },
+          (payload: any) => {
+            if (payload?.new?.key && payload?.new?.value !== undefined) {
+              const { key, value } = payload.new;
+              this.cache.set(key, value);
+              try {
+                localStorage.setItem(`center_sys_${key}`, JSON.stringify(value));
+              } catch {}
+              window.dispatchEvent(new CustomEvent('center_sys_sync', { detail: { key, value } }));
+            }
+          }
+        )
+        .subscribe();
+    } catch (e) {
+      console.warn('Realtime channel subscription error:', e);
+    }
+  }
+
+  private async pushToCloud(key: string, value: any) {
+    if (!this.isBrowser) return;
+    const supabase = getSupabase();
+    if (!supabase) return;
+
+    try {
+      const { error } = await supabase
+        .from('app_store')
+        .upsert({
+          key,
+          value,
+          updated_at: new Date().toISOString(),
+        });
+      if (error) {
+        console.warn(`Supabase saving ${key} notice:`, error.message);
+      }
+    } catch (err) {
+      console.warn(`Supabase network push error for ${key}:`, err);
+    }
+  }
 
   private getItem<T>(key: string, fallback: T): T {
     if (this.cache.has(key)) {
@@ -306,6 +403,7 @@ class SystemStore {
     } catch (e) {
       console.error('Failed to save to localStorage', e);
     }
+    this.pushToCloud(key, value);
   }
 
   // Users

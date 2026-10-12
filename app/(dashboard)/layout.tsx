@@ -17,13 +17,19 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const currentUser = getCurrentUser();
-    if (!currentUser) {
-      router.push('/login');
-    } else {
-      setUser(currentUser);
-    }
-    setLoading(false);
+    const refreshUser = () => {
+      const currentUser = getCurrentUser();
+      if (!currentUser) {
+        router.push('/login');
+      } else {
+        setUser(currentUser);
+      }
+      setLoading(false);
+    };
+
+    refreshUser();
+    window.addEventListener('center_sys_sync', refreshUser);
+    return () => window.removeEventListener('center_sys_sync', refreshUser);
   }, [router]);
 
   if (loading) {
