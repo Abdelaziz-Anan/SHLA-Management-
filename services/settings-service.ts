@@ -20,7 +20,7 @@ export function updateCenterBranding(updates: Partial<CenterInfo>): CenterInfo {
   store.addAuditLog({
     user_id: currentUser?.id,
     user_name: currentUser?.full_name,
-    action: `تحديث بيانات وهوية السنتر (${updated.name})`,
+    action: `تحديث بيانات وهوية الأكاديمية (${updated.name})`,
     entity_type: 'Branding',
     entity_id: updated.id,
     old_data: current,

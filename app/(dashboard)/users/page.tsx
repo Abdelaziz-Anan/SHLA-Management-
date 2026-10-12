@@ -367,8 +367,8 @@ export default function UsersPage() {
                   onChange={e => setEditRole(e.target.value as UserRole)}
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold"
                 >
-                  <option value="assistant">مساعد بالسنتر (Assistant)</option>
-                  <option value="manager">مدير السنتر (Manager - كامل الصلاحيات)</option>
+                  <option value="assistant">مساعد بالأكاديمية (Assistant)</option>
+                  <option value="manager">مديرة الأكاديمية (Manager - كامل الصلاحيات)</option>
                 </select>
               </div>
 
@@ -399,7 +399,7 @@ export default function UsersPage() {
             <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
               <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
                 <Plus className="w-4 h-4 text-purple-600" />
-                <span>{t('إضافة مساعد جديد للسنتر', 'Add New Center Assistant')}</span>
+                <span>{t('إضافة مساعد جديد للأكاديمية', 'Add New Academy Assistant')}</span>
               </h3>
               <button onClick={() => setIsCreateModalOpen(false)} className="p-1.5 rounded-full text-slate-400 hover:bg-slate-100">
                 <X className="w-5 h-5" />

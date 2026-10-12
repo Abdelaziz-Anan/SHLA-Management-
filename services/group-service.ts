@@ -271,3 +271,52 @@ export function generateSessionsForGroup(group: Group): GroupSession[] {
 
   return sessions;
 }
+
+export function deleteGroup(groupId: string): void {
+  const currentUser = getCurrentUser();
+  if (currentUser?.role !== 'manager') {
+    throw new Error('عفواً، هذه الصلاحية خاصة بحساب المديرة فقط');
+  }
+
+  const groups = store.getGroups();
+  const targetGroup = groups.find(g => g.id === groupId);
+  if (!targetGroup) throw new Error('المجموعة غير موجودة');
+
+  store.saveGroups(groups.filter(g => g.id !== groupId));
+
+  // Clean sessions
+  const sessions = store.getSessions();
+  store.saveSessions(sessions.filter(s => s.group_id !== groupId));
+
+  // Clean enrollments
+  const groupStudents = store.getGroupStudents();
+  store.saveGroupStudents(groupStudents.filter(gs => gs.group_id !== groupId));
+
+  store.addAuditLog({
+    user_id: currentUser?.id,
+    user_name: currentUser?.full_name,
+    action: `حذف المجموعة رقم #${targetGroup.group_number} (${targetGroup.course_name}) بواسطة المديرة`,
+    entity_type: 'GroupDelete',
+    entity_id: groupId,
+    old_data: targetGroup,
+  });
+}
+
+export function resetAllGroups(): void {
+  const currentUser = getCurrentUser();
+  if (currentUser?.role !== 'manager') {
+    throw new Error('عفواً، هذه الصلاحية خاصة بحساب المديرة فقط');
+  }
+
+  const count = store.getGroups().length;
+  store.saveGroups([]);
+  store.saveSessions([]);
+  store.saveGroupStudents([]);
+
+  store.addAuditLog({
+    user_id: currentUser?.id,
+    user_name: currentUser?.full_name,
+    action: `حذف كافة المجموعات والبدء من جديد (تم مسح ${count} مجموعة بواسطة المديرة)`,
+    entity_type: 'GroupReset',
+  });
+}

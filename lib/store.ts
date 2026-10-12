@@ -7,9 +7,9 @@ import {
 export const INITIAL_USERS: UserProfile[] = [
   {
     id: 'usr-manager-1',
-    full_name: 'د / سمر حمدي مدير SHLA (Dr. Samar Hamdy)',
+    full_name: 'د / سمر حمدي مديرة SHLA (Dr. Samar Hamdy)',
     email: 'samar@center.com',
-    phone: '01000000001',
+    phone: '01066383920',
     role: 'manager',
     is_active: true,
     last_login: new Date().toISOString(),
@@ -46,7 +46,7 @@ export const INITIAL_CENTER: CenterInfo = {
   name: 'SHLA Management',
   logo_url: '/logo.jpeg',
   cover_url: '/cover.jpeg',
-  phone: '01012345678',
+  phone: '01066383920',
   address: 'القاهرة - مصر',
   currency: 'EGP',
   created_at: '2026-08-01T10:00:00Z',
@@ -58,9 +58,9 @@ export const INITIAL_ACCOUNTS: PaymentAccount[] = [
   {
     id: 'acc-mgr-wallet',
     center_id: 'center-1',
-    account_name: 'Manager Wallet (محفظة المدير)',
+    account_name: 'Manager Wallet (محفظة المديرة)',
     account_type: 'Vodafone Cash',
-    account_number: '01011112222',
+    account_number: '01066383920',
     owner_type: 'manager',
     is_active: true,
     created_at: '2026-08-01T10:00:00Z',
@@ -68,9 +68,9 @@ export const INITIAL_ACCOUNTS: PaymentAccount[] = [
   {
     id: 'acc-center-cash',
     center_id: 'center-1',
-    account_name: 'Center Desk Cash (خزينة السنتر)',
+    account_name: 'Academy Desk Cash (خزينة الأكاديمية)',
     account_type: 'Cash Desk',
-    account_number: 'Center Desk',
+    account_number: 'Academy Desk',
     owner_type: 'center',
     is_active: true,
     created_at: '2026-08-01T10:00:00Z',
@@ -78,9 +78,9 @@ export const INITIAL_ACCOUNTS: PaymentAccount[] = [
   {
     id: 'acc-center-instapay',
     center_id: 'center-1',
-    account_name: 'Center InstaPay (إنستاباي السنتر)',
+    account_name: 'Academy InstaPay (إنستاباي الأكاديمية)',
     account_type: 'InstaPay',
-    account_number: 'center@instapay',
+    account_number: 'academy@instapay',
     owner_type: 'center',
     is_active: true,
     created_at: '2026-08-01T10:00:00Z',
@@ -221,7 +221,7 @@ export const INITIAL_SETTLEMENTS: Settlement[] = [
     delivered_by_name: 'ريم (Assistant 1)',
     received_by: 'usr-manager-1',
     received_by_name: 'د / سمر حمدي مدير SHLA',
-    notes: 'تسليم جزء من نقدية خزينة السنتر للمدير',
+    notes: 'تسليم جزء من نقدية خزينة الأكاديمية للمدير',
     created_at: '2025-10-02T12:00:00Z',
   }
 ];
@@ -230,7 +230,7 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
   {
     id: 'log-1',
     user_id: 'usr-manager-1',
-    user_name: 'د / سمر حمدي مدير SHLA',
+    user_name: 'د / سمر حمدي مديرة SHLA',
     action: 'تأسيس المجموعة 221',
     entity_type: 'Group',
     entity_id: 'grp-221',
@@ -280,7 +280,20 @@ class SystemStore {
 
   // Users
   getUsers(): UserProfile[] {
-    return this.getItem('users', INITIAL_USERS);
+    const users = this.getItem('users', INITIAL_USERS);
+    let changed = false;
+    const updated = users.map(u => {
+      if (u.role === 'manager' && u.phone !== '01066383920') {
+        changed = true;
+        return { ...u, phone: '01066383920' };
+      }
+      return u;
+    });
+    if (changed) {
+      this.setItem('users', updated);
+      return updated;
+    }
+    return users;
   }
   saveUsers(users: UserProfile[]) {
     this.setItem('users', users);
@@ -296,7 +309,29 @@ class SystemStore {
 
   // Accounts
   getAccounts(): PaymentAccount[] {
-    return this.getItem('accounts', INITIAL_ACCOUNTS);
+    const accounts = this.getItem('accounts', INITIAL_ACCOUNTS);
+    let changed = false;
+    const updated = accounts.map(a => {
+      let acc = { ...a };
+      if (acc.account_name.includes('السنتر')) {
+        acc.account_name = acc.account_name.replace(/السنتر/g, 'الأكاديمية');
+        changed = true;
+      }
+      if (acc.account_type.includes('السنتر')) {
+        acc.account_type = acc.account_type.replace(/السنتر/g, 'الأكاديمية');
+        changed = true;
+      }
+      if (acc.account_number && (acc.account_number.includes('01000000001') || (acc.id === 'acc-mgr-wallet' && !acc.account_number.includes('01066383920')))) {
+        acc.account_number = '01066383920 (فودافون كاش - المديرة)';
+        changed = true;
+      }
+      return acc;
+    });
+    if (changed) {
+      this.setItem('accounts', updated);
+      return updated;
+    }
+    return accounts;
   }
   saveAccounts(accounts: PaymentAccount[]) {
     this.setItem('accounts', accounts);
@@ -353,6 +388,9 @@ class SystemStore {
   // Audit Logs
   getAuditLogs(): AuditLog[] {
     return this.getItem('audit_logs', INITIAL_AUDIT_LOGS);
+  }
+  saveAuditLogs(logs: AuditLog[]) {
+    this.setItem('audit_logs', logs);
   }
   addAuditLog(log: Omit<AuditLog, 'id' | 'created_at'>) {
     const logs = this.getAuditLogs();

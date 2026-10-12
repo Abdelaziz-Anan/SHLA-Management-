@@ -400,7 +400,7 @@ export default function StudentProfilePage() {
                   </div>
 
                   <div className="flex items-center justify-between text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    <span>جهة الاستلام: <strong className="text-purple-700">{pay.custom_receiving_account || pay.receiving_account?.account_name || 'السنتر'}</strong></span>
+                    <span>جهة الاستلام: <strong className="text-purple-700">{pay.custom_receiving_account || pay.receiving_account?.account_name || 'الأكاديمية'}</strong></span>
                     <span>{pay.payment_method}</span>
                   </div>
 
@@ -486,7 +486,7 @@ export default function StudentProfilePage() {
                       <td className="p-4 font-medium text-slate-600">{formatDate(pay.payment_date)}</td>
                       <td className="p-4 font-semibold text-slate-800">{pay.payment_method}</td>
                       <td className="p-4 font-bold text-purple-700">
-                        {pay.custom_receiving_account || pay.receiving_account?.account_name || 'خزينة السنتر'}
+                        {pay.custom_receiving_account || pay.receiving_account?.account_name || 'خزينة الأكاديمية'}
                       </td>
                       <td className="p-4 text-center">
                         <button
@@ -599,7 +599,7 @@ export default function StudentProfilePage() {
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold"
                 >
                   <option value="Vodafone Cash">Vodafone Cash</option>
-                  <option value="Cash">نقداً بالسنتر (Cash)</option>
+                  <option value="Cash">نقداً بالأكاديمية (Cash)</option>
                   <option value="InstaPay">InstaPay</option>
                   <option value="Bank Transfer">تحويل بنكي</option>
                 </select>
@@ -617,7 +617,7 @@ export default function StudentProfilePage() {
                         : 'bg-slate-50 text-slate-600 border-slate-200'
                     }`}
                   >
-                    خزينة السنتر (Desk)
+                    خزينة الأكاديمية (Desk)
                   </button>
                   <button
                     type="button"
@@ -730,7 +730,7 @@ export default function StudentProfilePage() {
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold"
                   >
                     <option value="Vodafone Cash">Vodafone Cash</option>
-                    <option value="Cash">نقداً بالسنتر (Cash)</option>
+                    <option value="Cash">نقداً بالأكاديمية (Cash)</option>
                     <option value="InstaPay">InstaPay</option>
                     <option value="Bank Transfer">تحويل بنكي</option>
                   </select>
@@ -761,7 +761,7 @@ export default function StudentProfilePage() {
                         : 'bg-slate-50 text-slate-600 border-slate-200'
                     }`}
                   >
-                    خزينة السنتر (Desk)
+                    خزينة الأكاديمية (Desk)
                   </button>
                   <button
                     type="button"

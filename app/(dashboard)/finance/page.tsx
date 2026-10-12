@@ -1,7 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getFinanceSummary, getSettlementHistory, recordSettlement } from '@/services/finance-service';
+import {
+  getFinanceSummary,
+  getSettlementHistory,
+  recordSettlement,
+  deleteSettlement,
+  deleteAllFinancialTransactions,
+} from '@/services/finance-service';
+import { getCurrentUser } from '@/services/auth-service';
 import { FinanceSummary, Settlement } from '@/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { exportSettlementsToCSV } from '@/lib/export-utils';
@@ -18,19 +25,26 @@ import {
   CheckCircle2,
   Receipt,
   UserCheck,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react';
 
 export default function FinancePage() {
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [summary, setSummary] = useState<FinanceSummary>(getFinanceSummary());
   const [settlements, setSettlements] = useState<Settlement[]>(getSettlementHistory());
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+
+  const isManager = currentUser?.role === 'manager';
 
   // Settlement Form State
   const [settleAmount, setSettleAmount] = useState<number>(1000);
-  const [settleNotes, setSettleNotes] = useState<string>('تسليم نقدية السنتر اليومية للمدير');
+  const [settleNotes, setSettleNotes] = useState<string>('تسليم نقدية الأكاديمية اليومية للمديرة');
   const [error, setError] = useState<string>('');
 
   const loadData = () => {
+    setCurrentUser(getCurrentUser());
     setSummary(getFinanceSummary());
     setSettlements(getSettlementHistory());
   };
@@ -38,6 +52,28 @@ export default function FinancePage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleDeleteSettlement = (id: string) => {
+    if (!confirm('هل أنتِ متأكدة من رغبتك في حذف حركة التسليم هذه؟')) return;
+    try {
+      deleteSettlement(id);
+      loadData();
+      alert('تم حذف حركة التسليم بنجاح');
+    } catch (err: any) {
+      alert(err.message || 'فشل حذف حركة التسليم');
+    }
+  };
+
+  const handleResetFinanceTransactions = () => {
+    try {
+      deleteAllFinancialTransactions();
+      setIsResetModalOpen(false);
+      loadData();
+      alert('تم حذف المعاملات المالية بنجاح والبدء من جديد');
+    } catch (err: any) {
+      alert(err.message || 'حدث خطأ أثناء حذف المعاملات');
+    }
+  };
 
   const handleCreateSettlement = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,12 +111,23 @@ export default function FinancePage() {
             <span>إدارة الماليات وتصفية الخزينة</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            الفصل بين خزينة السنتر ومحفظة المدير، وتسليم النقدية المجمعة
+            الفصل بين خزينة الأكاديمية ومحفظة المديرة، وتسليم النقدية المجمعة
           </p>
         </div>
 
         {/* Buttons */}
-        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+          {isManager && (
+            <button
+              onClick={() => setIsResetModalOpen(true)}
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-all active:scale-98"
+              title="خاص بالمديرة: حذف المعاملات والبدء من جديد"
+            >
+              <Trash2 className="w-4 h-4 text-rose-600" />
+              <span>حذف المعاملات والبدء من جديد</span>
+            </button>
+          )}
+
           <button
             onClick={() => exportSettlementsToCSV(settlements)}
             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 transition-all active:scale-98"
@@ -95,7 +142,7 @@ export default function FinancePage() {
             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/25 transition-all active:scale-98"
           >
             <Plus className="w-4 h-4" />
-            <span>تسليم نقدية للمدير</span>
+            <span>تسليم نقدية للمديرة</span>
           </button>
         </div>
       </div>
@@ -111,17 +158,17 @@ export default function FinancePage() {
         />
 
         <StatCard
-          title="مستلم المدير المباشر"
+          title="مستلم المديرة المباشر"
           value={formatCurrency(summary.received_by_manager)}
-          subtitle="محفظة وحسابات المدير"
+          subtitle="محفظة وحسابات المديرة"
           icon={TrendingUp}
           variant="purple"
         />
 
         <StatCard
-          title="مقبوضات السنتر"
+          title="مقبوضات الأكاديمية"
           value={formatCurrency(summary.received_by_center)}
-          subtitle="إجمالي ما دخل خزينة السنتر"
+          subtitle="إجمالي ما دخل خزينة الأكاديمية"
           icon={Building}
           variant="emerald"
         />
@@ -129,7 +176,7 @@ export default function FinancePage() {
         <StatCard
           title="المتبقي في الخزينة"
           value={formatCurrency(summary.remaining_with_center)}
-          subtitle="مبالغ لم تسلم للمدير بعد"
+          subtitle="مبالغ لم تسلم للمديرة بعد"
           icon={AlertCircle}
           variant="amber"
           badge="نقدية الخزينة"
@@ -145,10 +192,10 @@ export default function FinancePage() {
             </div>
             <div>
               <h2 className="font-extrabold text-sm sm:text-base text-slate-900">
-                سجل تسليم المبالغ للمدير ({settlements.length})
+                سجل تسليم المبالغ للمديرة ({settlements.length})
               </h2>
               <p className="text-[11px] text-slate-400 font-medium mt-0.5">
-                حركات تصفية نقدية خزينة السنتر ونقلها لمحفظة المدير
+                حركات تصفية نقدية خزينة الأكاديمية ونقلها لمحفظة المديرة
               </p>
             </div>
           </div>
@@ -168,12 +215,23 @@ export default function FinancePage() {
                     <div>
                       <span className="text-[10px] font-bold text-slate-400">#{s.id.slice(-6)}</span>
                       <p className="text-xs font-black text-slate-900 mt-0.5">
-                        سجل بواسطة: <span className="text-blue-700">{s.delivered_by_name || s.delivered_by || 'السنتر'}</span>
+                        سجل بواسطة: <span className="text-blue-700">{s.delivered_by_name || s.delivered_by || 'الأكاديمية'}</span>
                       </p>
                     </div>
-                    <span className="text-base font-black text-emerald-600">
-                      {formatCurrency(s.amount)}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-base font-black text-emerald-600">
+                        {formatCurrency(s.amount)}
+                      </span>
+                      {isManager && (
+                        <button
+                          onClick={() => handleDeleteSettlement(s.id)}
+                          className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                          title="حذف حركة التسليم"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
@@ -181,7 +239,7 @@ export default function FinancePage() {
                   </p>
 
                   <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1">
-                    <span>الجهة: محفظة المدير المباشر</span>
+                    <span>الجهة: محفظة المديرة المباشرة</span>
                     <span>{formatDate(s.settlement_date)}</span>
                   </div>
                 </div>
@@ -199,6 +257,7 @@ export default function FinancePage() {
                     <th className="p-4">سجل بواسطة</th>
                     <th className="p-4">الجهة المستلمة</th>
                     <th className="p-4">ملاحظات وبيان التسليم</th>
+                    {isManager && <th className="p-4 text-center">إجراءات</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -207,9 +266,20 @@ export default function FinancePage() {
                       <td className="p-4 font-bold text-slate-400">{idx + 1}</td>
                       <td className="p-4 font-medium text-slate-600">{formatDate(s.settlement_date)}</td>
                       <td className="p-4 font-black text-emerald-600 text-sm">{formatCurrency(s.amount)}</td>
-                      <td className="p-4 font-extrabold text-blue-700">{s.delivered_by_name || s.delivered_by || 'السنتر'}</td>
-                      <td className="p-4 font-bold text-purple-700">محفظة / حساب المدير المباشر</td>
+                      <td className="p-4 font-extrabold text-blue-700">{s.delivered_by_name || s.delivered_by || 'الأكاديمية'}</td>
+                      <td className="p-4 font-bold text-purple-700">محفظة / حساب المديرة المباشر</td>
                       <td className="p-4 font-medium text-slate-600">{s.notes || '-'}</td>
+                      {isManager && (
+                        <td className="p-4 text-center">
+                          <button
+                            onClick={() => handleDeleteSettlement(s.id)}
+                            className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                            title="حذف حركة التسليم (المديرة فقط)"
+                          >
+                            <Trash2 className="w-4 h-4 mx-auto" />
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -226,7 +296,7 @@ export default function FinancePage() {
             <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
               <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
                 <Plus className="w-5 h-5 text-emerald-600" />
-                <span>تسليم نقدية الخزينة للمدير</span>
+                <span>تسليم نقدية الخزينة للمديرة</span>
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -244,7 +314,7 @@ export default function FinancePage() {
               )}
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">المبلغ المراد تسليمه للمدير (EGP) *</label>
+                <label className="block font-bold text-slate-700 mb-1">المبلغ المراد تسليمه للمديرة (EGP) *</label>
                 <input
                   type="number"
                   required
@@ -285,6 +355,37 @@ export default function FinancePage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* RESET ALL TRANSACTIONS MODAL (MANAGER ONLY) */}
+      {isResetModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-rose-100 animate-slide-up duration-300">
+            <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <h3 className="text-center font-black text-lg text-slate-900">
+              حذف المعاملات المالية والبدء من جديد
+            </h3>
+            <p className="text-center text-xs text-slate-500 mt-2 leading-relaxed">
+              تحذير: هذا الإجراء مخصص لـ <strong>مديرة الأكاديمية</strong> فقط. سيؤدي هذا الإجراء إلى حذف جميع سجلات التحصيل والتسليم المالي والبدء من جديد. لن يمكن التراجع بعد التنفيذ.
+            </p>
+            <div className="mt-6 flex items-center gap-3">
+              <button
+                onClick={() => setIsResetModalOpen(false)}
+                className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all"
+              >
+                إلغاء التراجع
+              </button>
+              <button
+                onClick={handleResetFinanceTransactions}
+                className="flex-1 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-600/25 transition-all"
+              >
+                تأكيد الحذف والبدء من جديد
+              </button>
+            </div>
           </div>
         </div>
       )}

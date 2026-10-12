@@ -82,7 +82,7 @@ export function exportGroupStudentsToCSV(group: Group, students: GroupStudent[])
     'رقم الهاتف': gs.student?.phone || '-',
     'تاريخ الحجز': formatDate(gs.booking_date),
     'وسيلة الحجز': gs.booking_method || '-',
-    'محفظة/حساب الاستلام': gs.receiving_account_number || 'خزينة السنتر',
+    'محفظة/حساب الاستلام': gs.receiving_account_number || 'خزينة الأكاديمية',
     'المسدد (ج.م)': gs.total_paid || 0,
     'المتبقي (ج.م)': gs.remaining_balance || 0,
     'الحالة المالية': gs.payment_status || 'Not Paid',
@@ -105,7 +105,7 @@ export function exportPaymentsToCSV(payments: any[]) {
     'المبلغ المدفوع (ج.م)': p.amount,
     'تاريخ الدفع': formatDate(p.payment_date),
     'طريقة الدفع': p.payment_method,
-    'جهة الاستلام': p.custom_receiving_account || p.receiving_account?.account_name || 'خزينة السنتر',
+    'جهة الاستلام': p.custom_receiving_account || p.receiving_account?.account_name || 'خزينة الأكاديمية',
     'حالة المعاملة': p.status === 'valid' ? 'معتمدة' : 'ملغاة/مصححة',
     'يوجد إيصال': p.receipt_url ? 'نعم' : 'لا',
     'ملاحظات': p.notes || '-',
@@ -145,13 +145,13 @@ export function exportSettlementsToCSV(settlements: Settlement[]) {
     '#': idx + 1,
     'معرف التسليم': `#${s.id.slice(-6)}`,
     'تاريخ ووقت التسليم': formatDate(s.settlement_date),
-    'المبلغ المسلم للمدير (ج.م)': s.amount,
-    'المسلم': s.delivered_by_name || s.delivered_by || 'السنتر',
-    'المستلم': s.received_by_name || s.received_by || 'محفظة المدير',
+    'المبلغ المسلم للمديرة (ج.م)': s.amount,
+    'المسلم': s.delivered_by_name || s.delivered_by || 'الأكاديمية',
+    'المستلم': s.received_by_name || s.received_by || 'محفظة المديرة',
     'ملاحظات التسليم': s.notes || '-',
   }));
 
-  exportToCSV('SHLA_تسليمات_الخزينة_للمدير', rows);
+  exportToCSV('SHLA_تسليمات_الخزينة_للمديرة', rows);
 }
 
 /**

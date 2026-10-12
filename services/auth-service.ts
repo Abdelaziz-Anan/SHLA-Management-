@@ -54,7 +54,7 @@ export async function loginWithCredentials(emailOrPhone: string, pass: string): 
   }
 
   if (!user.is_active) {
-    throw new Error('هذا الحساب معطل حالياً. يرجى التواصل مع مدير السنتر');
+    throw new Error('هذا الحساب معطل حالياً. يرجى التواصل مع مديرة الأكاديمية');
   }
 
   // If custom password was set for this user, check it (allowing standard center passwords)
@@ -91,7 +91,13 @@ export function getCurrentUser(): UserProfile | null {
   if (typeof window === 'undefined') return null;
   try {
     const data = localStorage.getItem(SESSION_KEY);
-    return data ? JSON.parse(data) : null;
+    if (!data) return null;
+    const user: UserProfile = JSON.parse(data);
+    if ((user.id === 'usr-manager-1' || user.role === 'manager') && user.phone !== '01066383920') {
+      user.phone = '01066383920';
+      localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+    }
+    return user;
   } catch {
     return null;
   }

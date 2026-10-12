@@ -181,3 +181,42 @@ export function updatePaymentReceipt(paymentId: string, receiptUrl: string): Pay
 
   return payment;
 }
+
+export function deletePayment(paymentId: string): void {
+  const currentUser = getCurrentUser();
+  if (currentUser?.role !== 'manager') {
+    throw new Error('عفواً، هذه الصلاحية خاصة بحساب المديرة فقط');
+  }
+
+  const payments = store.getPayments();
+  const payment = payments.find(p => p.id === paymentId);
+  if (!payment) throw new Error('العملية المالية غير موجودة');
+
+  store.savePayments(payments.filter(p => p.id !== paymentId));
+
+  store.addAuditLog({
+    user_id: currentUser?.id,
+    user_name: currentUser?.full_name,
+    action: `حذف معاملة مالية نهائياً بقيمة ${payment.amount} EGP بواسطة المديرة`,
+    entity_type: 'PaymentDelete',
+    entity_id: paymentId,
+    old_data: payment,
+  });
+}
+
+export function deleteAllPayments(): void {
+  const currentUser = getCurrentUser();
+  if (currentUser?.role !== 'manager') {
+    throw new Error('عفواً، هذه الصلاحية خاصة بحساب المديرة فقط');
+  }
+
+  const count = store.getPayments().length;
+  store.savePayments([]);
+
+  store.addAuditLog({
+    user_id: currentUser?.id,
+    user_name: currentUser?.full_name,
+    action: `حذف كافة المعاملات المالية والمدفوعات (${count} معاملة) بواسطة المديرة`,
+    entity_type: 'PaymentReset',
+  });
+}

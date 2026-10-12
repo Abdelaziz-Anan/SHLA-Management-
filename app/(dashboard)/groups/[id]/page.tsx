@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
   getGroupById,
   getGroupSessions,
@@ -10,7 +10,9 @@ import {
   toggleSessionStatus,
   addSessionToGroup,
   deleteSessionFromGroup,
+  deleteGroup,
 } from '@/services/group-service';
+import { getCurrentUser } from '@/services/auth-service';
 import { getGroupStudentsWithDetails, updateStudentEnrollmentDetails } from '@/services/student-service';
 import { updatePaymentReceipt } from '@/services/payment-service';
 import { Group, GroupSession, GroupStudent, BookingMethod, Payment } from '@/types';
@@ -43,9 +45,11 @@ import {
 
 export default function GroupDetailsPage() {
   const params = useParams();
+  const router = useRouter();
   const groupId = params.id as string;
   const { t } = useLanguage();
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [group, setGroup] = useState<Group | null>(null);
   const [sessions, setSessions] = useState<GroupSession[]>([]);
   const [students, setStudents] = useState<GroupStudent[]>([]);
@@ -70,6 +74,7 @@ export default function GroupDetailsPage() {
 
   const loadData = () => {
     if (!groupId) return;
+    setCurrentUser(getCurrentUser());
     const g = getGroupById(groupId);
     setGroup(g);
     setSessions(getGroupSessions(groupId));
@@ -79,6 +84,18 @@ export default function GroupDetailsPage() {
   useEffect(() => {
     loadData();
   }, [groupId]);
+
+  const handleDeleteThisGroup = () => {
+    if (!group) return;
+    if (!confirm(`هل أنتِ متأكدة من حذف المجموعة #${group.group_number} (${group.course_name})؟`)) return;
+    try {
+      deleteGroup(group.id);
+      alert('تم حذف المجموعة بنجاح');
+      router.push('/groups');
+    } catch (e: any) {
+      alert(e.message || 'فشل حذف المجموعة');
+    }
+  };
 
   const handleSaveSessionDate = (sessionId: string) => {
     if (!newSessionDate) return;
@@ -235,15 +252,28 @@ export default function GroupDetailsPage() {
           <span>{t('العودة إلى كل المجموعات', 'Back to all groups')}</span>
         </Link>
 
-        {/* CSV Export Button for this Group */}
-        <button
-          onClick={() => exportGroupStudentsToCSV(group, students)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all active:scale-98"
-          title="تصدير كشف طلاب هذه المجموعة إلى Excel / CSV"
-        >
-          <Download className="w-3.5 h-3.5" />
-          <span>تصدير كشف المجموعة CSV</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {currentUser?.role === 'manager' && (
+            <button
+              onClick={handleDeleteThisGroup}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-all active:scale-98"
+              title="حذف هذه المجموعة (خاص بالمديرة)"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+              <span>حذف المجموعة</span>
+            </button>
+          )}
+
+          {/* CSV Export Button for this Group */}
+          <button
+            onClick={() => exportGroupStudentsToCSV(group, students)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all active:scale-98"
+            title="تصدير كشف طلاب هذه المجموعة إلى Excel / CSV"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>تصدير كشف المجموعة CSV</span>
+          </button>
+        </div>
       </div>
 
       {/* Group Header Info Card */}
@@ -482,7 +512,7 @@ export default function GroupDetailsPage() {
 
                     {/* Details row */}
                     <div className="flex items-center justify-between text-[11px] text-slate-500">
-                      <span>حساب الاستلام: <strong className="text-purple-700">{gs.receiving_account_number || 'السنتر'}</strong></span>
+                      <span>حساب الاستلام: <strong className="text-purple-700">{gs.receiving_account_number || 'الأكاديمية'}</strong></span>
                       <span>وسيلة: <strong className="text-slate-700">{gs.booking_method}</strong></span>
                     </div>
 
@@ -690,7 +720,7 @@ export default function GroupDetailsPage() {
                         : 'bg-slate-50 text-slate-600 border-slate-200'
                     }`}
                   >
-                    خزينة السنتر (Desk)
+                    خزينة الأكاديمية (Desk)
                   </button>
 
                   <button

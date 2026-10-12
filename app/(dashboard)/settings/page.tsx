@@ -57,10 +57,10 @@ export default function SettingsPage() {
           <div className="p-2 bg-purple-50 text-purple-600 rounded-xl border border-purple-100">
             <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <span>إعدادات هوية السنتر (Center Branding)</span>
+          <span>إعدادات هوية الأكاديمية (Academy Branding)</span>
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">
-          تخصيص اسم السنتر، الشعار، صورة الغلاف (Banner)، ورقم الهاتف والبيانات المعتمدة
+          تخصيص اسم الأكاديمية، الشعار، صورة الغلاف (Banner)، ورقم الهاتف والبيانات المعتمدة
         </p>
       </div>
 
@@ -69,7 +69,7 @@ export default function SettingsPage() {
           {success && (
             <div className="p-4 bg-emerald-50 text-emerald-700 rounded-2xl font-bold flex items-center gap-2 border border-emerald-200 animate-in fade-in">
               <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-              <span>تم حفظ هوية السنتر وصورة الغلاف بنجاح!</span>
+              <span>تم حفظ هوية الأكاديمية وصورة الغلاف بنجاح!</span>
             </div>
           )}
 
@@ -89,7 +89,7 @@ export default function SettingsPage() {
               )}
             </div>
             <div className="flex-1 text-center sm:text-right">
-              <label className="block text-xs font-black text-slate-800 mb-0.5">شعار السنتر الرسمي (Logo)</label>
+              <label className="block text-xs font-black text-slate-800 mb-0.5">شعار الأكاديمية الرسمي (Logo)</label>
               <p className="text-[11px] text-slate-400 mb-3">
                 يظهر الشعار في الترويسة، شريط التنقل، وصفحة الدخول
               </p>
@@ -128,7 +128,7 @@ export default function SettingsPage() {
           {/* Inputs Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">اسم السنتر (Center Name) *</label>
+              <label className="block font-bold text-slate-700 mb-1">اسم الأكاديمية (Academy Name) *</label>
               <input
                 type="text"
                 required
@@ -151,7 +151,7 @@ export default function SettingsPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">رقم تواصل السنتر</label>
+              <label className="block font-bold text-slate-700 mb-1">رقم تواصل الأكاديمية</label>
               <input
                 type="text"
                 value={branding.phone}

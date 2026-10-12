@@ -7,7 +7,7 @@ VALUES (
     'Samar Hamdy Language Academy (SHLA)',
     '/logo.png',
     '/cover.jpg',
-    '01012345678',
+    '01066383920',
     'Cairo, Egypt',
     'EGP'
 ) ON CONFLICT (id) DO NOTHING;
@@ -15,9 +15,9 @@ VALUES (
 -- 2. INSERT DEFAULT PAYMENT ACCOUNTS
 INSERT INTO public.payment_accounts (id, center_id, account_name, account_type, account_number, owner_type)
 VALUES 
-    ('c1111111-1111-1111-1111-111111111111', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Manager Wallet (محفظة المدير)', 'Vodafone Cash', '01011112222', 'manager'),
-    ('c2222222-2222-2222-2222-222222222222', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Center Cash (خزينة السنتر)', 'Cash Desk', 'Center Desk', 'center'),
-    ('c3333333-3333-3333-3333-333333333333', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'InstaPay Center (إنستاباي)', 'InstaPay', 'center@instapay', 'center')
+    ('c1111111-1111-1111-1111-111111111111', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Manager Wallet (محفظة المديرة)', 'Vodafone Cash', '01066383920', 'manager'),
+    ('c2222222-2222-2222-2222-222222222222', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Academy Cash (خزينة الأكاديمية)', 'Cash Desk', 'Academy Desk', 'academy'),
+    ('c3333333-3333-3333-3333-333333333333', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'InstaPay Academy (إنستاباي)', 'InstaPay', 'academy@instapay', 'academy')
 ON CONFLICT (id) DO NOTHING;
 
 -- 3. INSERT DEMO GROUP 221 (Based on WhatsApp Image)

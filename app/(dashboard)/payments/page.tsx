@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { store } from '@/lib/store';
 import { getGroupStudentsWithDetails } from '@/services/student-service';
-import { reversePayment, updatePaymentReceipt } from '@/services/payment-service';
+import { reversePayment, updatePaymentReceipt, deletePayment, deleteAllPayments } from '@/services/payment-service';
+import { getCurrentUser } from '@/services/auth-service';
 import { Payment } from '@/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { exportPaymentsToCSV } from '@/lib/export-utils';
@@ -20,17 +21,24 @@ import {
   Download,
   X,
   FileImage,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react';
 
 export default function PaymentsPage() {
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [payments, setPayments] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [methodFilter, setMethodFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'valid' | 'reversed'>('all');
   const [activePaymentForReceipt, setActivePaymentForReceipt] = useState<Payment | null>(null);
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+
+  const isManager = currentUser?.role === 'manager';
 
   const loadData = () => {
+    setCurrentUser(getCurrentUser());
     const allPayments = store.getPayments();
     const groupStudents = getGroupStudentsWithDetails();
     const accounts = store.getAccounts();
@@ -87,6 +95,28 @@ export default function PaymentsPage() {
     }
   };
 
+  const handleDeletePayment = (paymentId: string) => {
+    if (!confirm('هل أنتِ متأكدة من حذف هذه المعاملة المالية نهائياً؟')) return;
+    try {
+      deletePayment(paymentId);
+      loadData();
+      alert('تم حذف المعاملة المالية بنجاح');
+    } catch (e: any) {
+      alert(e.message || 'فشل حذف المعاملة');
+    }
+  };
+
+  const handleResetAllPayments = () => {
+    try {
+      deleteAllPayments();
+      setIsResetModalOpen(false);
+      loadData();
+      alert('تم حذف كافة المعاملات والبدء من جديد بنجاح');
+    } catch (e: any) {
+      alert(e.message || 'فشل حذف المعاملات');
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Header */}
@@ -99,19 +129,32 @@ export default function PaymentsPage() {
             <span>سجل المعاملات المالية والإيصالات</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            سجل كافة المعاملات المالية بالسنتر، فحص الإيصالات، وتتبع المحافظ
+            سجل كافة المعاملات المالية بالأكاديمية، فحص الإيصالات، وتتبع المحافظ
           </p>
         </div>
 
-        {/* CSV Export Button */}
-        <button
-          onClick={() => exportPaymentsToCSV(filteredPayments)}
-          className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 transition-all active:scale-98"
-          title="تصدير كشف المعاملات إلى Excel / CSV"
-        >
-          <Download className="w-4 h-4" />
-          <span>تصدير سجل المدفوعات CSV</span>
-        </button>
+        {/* Buttons: Manager Reset & CSV Export */}
+        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+          {isManager && (
+            <button
+              onClick={() => setIsResetModalOpen(true)}
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-all active:scale-98"
+              title="خاص بالمديرة: حذف كافة المعاملات والبدء من جديد"
+            >
+              <Trash2 className="w-4 h-4 text-rose-600" />
+              <span>حذف المعاملات والبدء من جديد</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => exportPaymentsToCSV(filteredPayments)}
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 transition-all active:scale-98"
+            title="تصدير كشف المعاملات إلى Excel / CSV"
+          >
+            <Download className="w-4 h-4" />
+            <span>تصدير سجل المدفوعات CSV</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter Bar */}
@@ -198,7 +241,7 @@ export default function PaymentsPage() {
                   </div>
 
                   <div className="flex items-center justify-between text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    <span>جهة الاستلام: <strong className="text-purple-700">{pay.custom_receiving_account || pay.receiving_account?.account_name || 'السنتر'}</strong></span>
+                    <span>جهة الاستلام: <strong className="text-purple-700">{pay.custom_receiving_account || pay.receiving_account?.account_name || 'الأكاديمية'}</strong></span>
                     <span>{pay.payment_method}</span>
                   </div>
 
@@ -237,6 +280,17 @@ export default function PaymentsPage() {
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
                           <span>إلغاء</span>
+                        </button>
+                      )}
+
+                      {isManager && (
+                        <button
+                          onClick={() => handleDeletePayment(pay.id)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-bold border border-rose-200"
+                          title="حذف نهائي (المديرة فقط)"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>حذف</span>
                         </button>
                       )}
                     </div>
@@ -285,7 +339,7 @@ export default function PaymentsPage() {
                       <td className="p-4 font-medium text-slate-600">{formatDate(pay.payment_date)}</td>
                       <td className="p-4 font-semibold text-slate-800">{pay.payment_method}</td>
                       <td className="p-4 font-bold text-purple-700">
-                        {pay.custom_receiving_account || pay.receiving_account?.account_name || 'خزينة السنتر'}
+                        {pay.custom_receiving_account || pay.receiving_account?.account_name || 'خزينة الأكاديمية'}
                       </td>
                       <td className="p-4 text-center">
                         <button
@@ -316,15 +370,27 @@ export default function PaymentsPage() {
                         <StatusBadge status={pay.status} type="payment" />
                       </td>
                       <td className="p-4 text-left">
-                        {pay.status === 'valid' && (
-                          <button
-                            onClick={() => handleReverse(pay.id)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-bold border border-rose-200 transition-colors"
-                          >
-                            <RotateCcw className="w-3.5 h-3.5" />
-                            <span>إلغاء وتصحيح</span>
-                          </button>
-                        )}
+                        <div className="flex items-center justify-end gap-1.5">
+                          {pay.status === 'valid' && (
+                            <button
+                              onClick={() => handleReverse(pay.id)}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-bold border border-rose-200 transition-colors"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              <span>إلغاء وتصحيح</span>
+                            </button>
+                          )}
+                          {isManager && (
+                            <button
+                              onClick={() => handleDeletePayment(pay.id)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-bold border border-rose-200 transition-colors"
+                              title="حذف المعاملة نهائياً (المديرة فقط)"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>حذف</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                     );
@@ -350,6 +416,37 @@ export default function PaymentsPage() {
             loadData();
           }}
         />
+      )}
+
+      {/* RESET ALL PAYMENTS MODAL (MANAGER ONLY) */}
+      {isResetModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-rose-100 animate-slide-up duration-300">
+            <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <h3 className="text-center font-black text-lg text-slate-900">
+              حذف كافة المعاملات المالية والبدء من جديد
+            </h3>
+            <p className="text-center text-xs text-slate-500 mt-2 leading-relaxed">
+              تحذير: هذا الإجراء مخصص لـ <strong>مديرة الأكاديمية</strong> فقط. سيؤدي هذا الإجراء إلى حذف جميع سجلات المدفوعات المسجلة والبدء من جديد. لن يمكن التراجع بعد التنفيذ.
+            </p>
+            <div className="mt-6 flex items-center gap-3">
+              <button
+                onClick={() => setIsResetModalOpen(false)}
+                className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all"
+              >
+                إلغاء التراجع
+              </button>
+              <button
+                onClick={handleResetAllPayments}
+                className="flex-1 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-600/25 transition-all"
+              >
+                تأكيد الحذف والبدء من جديد
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

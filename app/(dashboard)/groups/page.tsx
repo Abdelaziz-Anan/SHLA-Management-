@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { getGroups, createGroup } from '@/services/group-service';
+import { getGroups, createGroup, deleteGroup, resetAllGroups } from '@/services/group-service';
+import { getCurrentUser } from '@/services/auth-service';
 import { Group, GroupStatus } from '@/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -21,6 +22,8 @@ import {
   ChevronLeft,
   Download,
   Check,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react';
 
 const WEEKDAYS = [
@@ -39,6 +42,10 @@ export default function GroupsPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  const isManager = currentUser?.role === 'manager';
 
   // Form State for New Group
   const [formData, setFormData] = useState({
@@ -59,6 +66,7 @@ export default function GroupsPage() {
   const [formError, setFormError] = useState('');
 
   const loadData = () => {
+    setCurrentUser(getCurrentUser());
     const list = getGroups();
     setGroups(list);
   };
@@ -71,6 +79,30 @@ export default function GroupsPage() {
       setIsModalOpen(true);
     }
   }, []);
+
+  const handleResetAllGroups = () => {
+    try {
+      resetAllGroups();
+      setIsResetModalOpen(false);
+      loadData();
+      alert('تم حذف جميع المجموعات والبدء من جديد بنجاح');
+    } catch (err: any) {
+      alert(err.message || 'حدث خطأ أثناء حذف المجموعات');
+    }
+  };
+
+  const handleDeleteGroup = (e: React.MouseEvent, groupId: string, groupNumber: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!confirm(`هل أنتِ متأكدة من حذف المجموعة #${groupNumber}؟`)) return;
+    try {
+      deleteGroup(groupId);
+      loadData();
+      alert('تم حذف المجموعة بنجاح');
+    } catch (err: any) {
+      alert(err.message || 'فشل حذف المجموعة');
+    }
+  };
 
   // Performance memoization for filtered groups
   const filteredGroups = useMemo(() => {
@@ -152,8 +184,19 @@ export default function GroupsPage() {
           </p>
         </div>
 
-        {/* Action Buttons: New Group & CSV Export */}
-        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+        {/* Action Buttons: New Group & CSV Export & Manager Reset */}
+        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+          {isManager && (
+            <button
+              onClick={() => setIsResetModalOpen(true)}
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-all active:scale-98"
+              title="خاص بالمديرة: حذف جميع المجموعات والبدء من جديد"
+            >
+              <Trash2 className="w-4 h-4 text-rose-600" />
+              <span>حذف المجموعات والبدء من جديد</span>
+            </button>
+          )}
+
           <button
             onClick={() => exportGroupsToCSV(filteredGroups)}
             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 transition-all active:scale-98"
@@ -274,14 +317,24 @@ export default function GroupsPage() {
               </div>
 
               {/* Action Link Button */}
-              <div className="mt-4 pt-3 border-t border-slate-100">
+              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2">
                 <Link
                   href={`/groups/${group.id}`}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-slate-900 hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-98"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-slate-900 hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-98"
                 >
                   <span>فتح كشف المجموعة والجدول</span>
                   <ChevronLeft className="w-4 h-4" />
                 </Link>
+
+                {isManager && (
+                  <button
+                    onClick={(e) => handleDeleteGroup(e, group.id, group.group_number)}
+                    className="p-2.5 text-rose-500 hover:bg-rose-50 hover:text-rose-700 rounded-xl border border-slate-200 hover:border-rose-200 transition-colors"
+                    title="حذف المجموعة (المديرة فقط)"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
           ))
@@ -469,6 +522,37 @@ export default function GroupsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* RESET ALL GROUPS MODAL (MANAGER ONLY) */}
+      {isResetModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-rose-100 animate-slide-up duration-300">
+            <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <h3 className="text-center font-black text-lg text-slate-900">
+              حذف جميع المجموعات والبدء من جديد
+            </h3>
+            <p className="text-center text-xs text-slate-500 mt-2 leading-relaxed">
+              تحذير: هذا الإجراء مخصص لـ <strong>مديرة الأكاديمية</strong> فقط. سيؤدي هذا الإجراء إلى حذف كافة المجموعات المسجلة والبدء من جديد. لن يمكن التراجع عن هذا الإجراء بعد تنفيذه.
+            </p>
+            <div className="mt-6 flex items-center gap-3">
+              <button
+                onClick={() => setIsResetModalOpen(false)}
+                className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all"
+              >
+                إلغاء التراجع
+              </button>
+              <button
+                onClick={handleResetAllGroups}
+                className="flex-1 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-600/25 transition-all"
+              >
+                تأكيد الحذف والبدء من جديد
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -89,7 +89,7 @@ export function StatusBadge({ status, type = 'payment', className }: StatusBadge
       dotColor = 'bg-purple-500';
       pingColor = 'bg-purple-400';
       dotShadow = 'shadow-[0_0_8px_rgba(168,85,247,0.6)]';
-      label = 'مدير السنتر (Manager)';
+      label = 'مديرة الأكاديمية (Manager)';
       isPulsing = true;
     } else {
       badgeStyle = 'bg-blue-50/90 text-blue-800 border-blue-200/90 font-bold';

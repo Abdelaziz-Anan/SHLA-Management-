@@ -134,9 +134,9 @@ export default function DashboardPage() {
         />
 
         <StatCard
-          title={t('خزينة السنتر', 'Center Cash')}
+          title={t('خزينة الأكاديمية', 'Academy Cash')}
           value={formatCurrency(summary.remaining_with_center)}
-          subtitle={t('متبقي لم يسلم للمدير', 'Awaiting Settlement')}
+          subtitle={t('متبقي لم يسلم للمديرة', 'Awaiting Settlement')}
           icon={Building}
           variant="emerald"
           className="animate-slide-up stagger-3"
@@ -187,7 +187,7 @@ export default function DashboardPage() {
           <div className="mt-4">
             <h3 className="text-2xl font-black text-slate-900">{summary.student_count}</h3>
             <p className="text-xs text-slate-500 font-semibold mt-1">
-              {t('إجمالي الطلاب المسجلين بالسنتر', 'Total Enrolled Students')}
+              {t('إجمالي الطلاب المسجلين بالأكاديمية', 'Total Enrolled Students')}
             </p>
           </div>
         </div>

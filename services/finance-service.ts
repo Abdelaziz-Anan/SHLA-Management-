@@ -115,3 +115,61 @@ export function recordSettlement(data: {
 
   return newSettlement;
 }
+
+export function deleteSettlement(settlementId: string): void {
+  const currentUser = getCurrentUser();
+  if (currentUser?.role !== 'manager') {
+    throw new Error('عفواً، هذه الصلاحية خاصة بحساب المديرة فقط');
+  }
+
+  const settlements = store.getSettlements();
+  const settlement = settlements.find(s => s.id === settlementId);
+  if (!settlement) throw new Error('المعاملة غير موجودة');
+
+  store.saveSettlements(settlements.filter(s => s.id !== settlementId));
+
+  store.addAuditLog({
+    user_id: currentUser?.id,
+    user_name: currentUser?.full_name,
+    action: `حذف معاملة تسليم مالي بقيمة ${settlement.amount} EGP بواسطة المديرة`,
+    entity_type: 'SettlementDelete',
+    entity_id: settlementId,
+    old_data: settlement,
+  });
+}
+
+export function deleteAllSettlements(): void {
+  const currentUser = getCurrentUser();
+  if (currentUser?.role !== 'manager') {
+    throw new Error('عفواً، هذه الصلاحية خاصة بحساب المديرة فقط');
+  }
+
+  const count = store.getSettlements().length;
+  store.saveSettlements([]);
+
+  store.addAuditLog({
+    user_id: currentUser?.id,
+    user_name: currentUser?.full_name,
+    action: `حذف كافة سجلات تسليم النقدية (${count} معاملة) في الإدارة المالية بواسطة المديرة`,
+    entity_type: 'SettlementReset',
+  });
+}
+
+export function deleteAllFinancialTransactions(): void {
+  const currentUser = getCurrentUser();
+  if (currentUser?.role !== 'manager') {
+    throw new Error('عفواً، هذه الصلاحية خاصة بحساب المديرة فقط');
+  }
+
+  const settlementsCount = store.getSettlements().length;
+  const paymentsCount = store.getPayments().length;
+  store.saveSettlements([]);
+  store.savePayments([]);
+
+  store.addAuditLog({
+    user_id: currentUser?.id,
+    user_name: currentUser?.full_name,
+    action: `حذف وتصفير كافة المعاملات المالية بالكامل (${settlementsCount} تسليمات، ${paymentsCount} مدفوعات) بواسطة المديرة`,
+    entity_type: 'FinanceReset',
+  });
+}

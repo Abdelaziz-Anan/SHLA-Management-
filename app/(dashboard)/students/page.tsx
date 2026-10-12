@@ -361,7 +361,7 @@ export default function StudentsPage() {
             <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
               <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
                 <Plus className="w-5 h-5 text-blue-600" />
-                <span>تسجيل طالب جديد بالسنتر</span>
+                <span>تسجيل طالب جديد بالأكاديمية</span>
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -434,7 +434,7 @@ export default function StudentsPage() {
                     onChange={e => setFormData({ ...formData, booking_method: e.target.value as BookingMethod })}
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
                   >
-                    <option value="Center">Center (من مقر السنتر)</option>
+                    <option value="Center">Academy (من مقر الأكاديمية)</option>
                     <option value="V.cash">V.cash (فودافون كاش)</option>
                     <option value="InstaPay">InstaPay (إنستاباي)</option>
                     <option value="Bank Transfer">تحويل بنكي</option>
@@ -469,7 +469,7 @@ export default function StudentsPage() {
                       className="w-full p-2 border border-slate-200 rounded-xl bg-white text-xs font-semibold"
                     >
                       <option value="Vodafone Cash">Vodafone Cash</option>
-                      <option value="Cash">نقداً بالسنتر</option>
+                      <option value="Cash">نقداً بالأكاديمية</option>
                       <option value="InstaPay">InstaPay</option>
                       <option value="Bank Transfer">تحويل بنكي</option>
                     </select>
@@ -483,9 +483,9 @@ export default function StudentsPage() {
                     onChange={e => setFormData({ ...formData, receiving_account_id: e.target.value })}
                     className="w-full p-2 border border-slate-200 rounded-xl font-bold text-slate-800 bg-white text-xs"
                   >
-                    <option value="acc-center-cash">خزينة السنتر (Center Desk Cash)</option>
-                    <option value="acc-mgr-wallet">محفظة المدير (Manager Wallet - 01011112222)</option>
-                    <option value="acc-center-instapay">إنستاباي السنتر (Center InstaPay)</option>
+                    <option value="acc-center-cash">خزينة الأكاديمية (Academy Desk Cash)</option>
+                    <option value="acc-mgr-wallet">محفظة المديرة (Manager Wallet - 01066383920)</option>
+                    <option value="acc-center-instapay">إنستاباي الأكاديمية (Academy InstaPay)</option>
                   </select>
                 </div>
               </div>
