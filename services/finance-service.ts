@@ -28,8 +28,33 @@ export function getFinanceSummary(filterMonth?: string): FinanceSummary {
     const p = payments[i];
     const acc = p.receiving_account_id ? accountMap.get(p.receiving_account_id) : undefined;
     totalCollected += p.amount;
+    const isCenterAccount =
+      acc?.owner_type === 'center' ||
+      p.receiving_account_id === 'acc-center-cash' ||
+      p.receiving_account_id === 'acc-center-instapay' ||
+      p.receiving_account_id === 'acc-center-wallet' ||
+      Boolean(p.receiving_account_id && (p.receiving_account_id.includes('center') || p.receiving_account_id.includes('academy'))) ||
+      Boolean(p.custom_receiving_account && (
+        p.custom_receiving_account.includes('خزينة') ||
+        p.custom_receiving_account.includes('الأكاديمية') ||
+        p.custom_receiving_account.includes('Center')
+      ));
 
-    if (acc?.owner_type === 'manager') {
+    const isManagerAccount =
+      !isCenterAccount && (
+        acc?.owner_type === 'manager' ||
+        p.receiving_account_id === 'acc-mgr-wallet' ||
+        p.receiving_account_id === 'acc-mgr-instapay' ||
+        p.receiving_account_id === 'acc-mgr-cash' ||
+        Boolean(p.receiving_account_id && (p.receiving_account_id.includes('mgr') || p.receiving_account_id.includes('manager'))) ||
+        Boolean(p.custom_receiving_account && (
+          p.custom_receiving_account.includes('01066383920') ||
+          p.custom_receiving_account.includes('المديرة') ||
+          p.custom_receiving_account.includes('المدير')
+        ))
+      );
+
+    if (isManagerAccount) {
       managerReceived += p.amount;
     } else {
       centerReceived += p.amount;

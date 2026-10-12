@@ -58,7 +58,7 @@ export default function StudentProfilePage() {
   // New Payment Form
   const [payAmount, setPayAmount] = useState<number>(500);
   const [payMethod, setPayMethod] = useState<PaymentMethod>('Vodafone Cash');
-  const [payAccountOption, setPayAccountOption] = useState<'center_desk' | 'custom'>('center_desk');
+  const [payAccountId, setPayAccountId] = useState<string>('acc-center-wallet');
   const [payCustomWallet, setPayCustomWallet] = useState<string>('');
   const [payDate, setPayDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [payNotes, setPayNotes] = useState<string>('');
@@ -70,7 +70,7 @@ export default function StudentProfilePage() {
   const [editPayAmount, setEditPayAmount] = useState<number>(0);
   const [editPayDate, setEditPayDate] = useState<string>('');
   const [editPayMethod, setEditPayMethod] = useState<PaymentMethod>('Vodafone Cash');
-  const [editAccountOption, setEditAccountOption] = useState<'center_desk' | 'custom'>('center_desk');
+  const [editAccountId, setEditAccountId] = useState<string>('acc-center-wallet');
   const [editCustomWallet, setEditCustomWallet] = useState<string>('');
   const [editPayStatus, setEditPayStatus] = useState<'valid' | 'reversed'>('valid');
   const [editPayError, setEditPayError] = useState<string>('');
@@ -107,19 +107,18 @@ export default function StudentProfilePage() {
       return;
     }
 
-    let finalAccId = 'acc-center-cash';
+    let finalAccId = payAccountId;
     let finalCustomAcc = '';
 
-    if (payAccountOption === 'center_desk') {
-      finalAccId = 'acc-center-cash';
-      finalCustomAcc = 'Center Desk';
-    } else {
+    if (payAccountId === 'custom') {
       if (!payCustomWallet.trim()) {
         setPayError('يرجى كتابة رقم محفظة/حساب التحويل');
         return;
       }
       finalAccId = 'acc-mgr-wallet';
       finalCustomAcc = payCustomWallet.trim();
+    } else if (payAccountId === 'acc-center-cash') {
+      finalCustomAcc = 'Center Desk';
     }
 
     try {
@@ -152,13 +151,20 @@ export default function StudentProfilePage() {
     setEditPayMethod(payment.payment_method);
     setEditPayStatus(payment.status);
 
+    const accId = payment.receiving_account_id;
     const customAcc = payment.custom_receiving_account || payment.receiving_account?.account_number || '';
-    if (customAcc === 'Center Desk' || customAcc.includes('خزينة')) {
-      setEditAccountOption('center_desk');
+    if (accId && ['acc-center-cash', 'acc-center-instapay', 'acc-center-wallet', 'acc-mgr-wallet', 'acc-mgr-instapay', 'acc-mgr-cash'].includes(accId)) {
+      setEditAccountId(accId);
       setEditCustomWallet('');
-    } else {
-      setEditAccountOption('custom');
+    } else if (customAcc === 'Center Desk' || customAcc.includes('خزينة')) {
+      setEditAccountId('acc-center-cash');
+      setEditCustomWallet('');
+    } else if (customAcc) {
+      setEditAccountId('custom');
       setEditCustomWallet(customAcc);
+    } else {
+      setEditAccountId(accId || 'acc-center-cash');
+      setEditCustomWallet('');
     }
     setEditPayError('');
   };
@@ -173,19 +179,18 @@ export default function StudentProfilePage() {
       return;
     }
 
-    let finalAccId = 'acc-center-cash';
+    let finalAccId = editAccountId;
     let finalCustomAcc = '';
 
-    if (editAccountOption === 'center_desk') {
-      finalAccId = 'acc-center-cash';
-      finalCustomAcc = 'Center Desk';
-    } else {
+    if (editAccountId === 'custom') {
       if (!editCustomWallet.trim()) {
         setEditPayError('يرجى كتابة رقم محفظة/حساب التحويل');
         return;
       }
       finalAccId = 'acc-mgr-wallet';
       finalCustomAcc = editCustomWallet.trim();
+    } else if (editAccountId === 'acc-center-cash') {
+      finalCustomAcc = 'Center Desk';
     }
 
     try {
@@ -606,33 +611,28 @@ export default function StudentProfilePage() {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">جهة استلام النقدية (Destination)</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPayAccountOption('center_desk')}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
-                      payAccountOption === 'center_desk'
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-slate-50 text-slate-600 border-slate-200'
-                    }`}
-                  >
-                    خزينة الأكاديمية (Desk)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPayAccountOption('custom')}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
-                      payAccountOption === 'custom'
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-slate-50 text-slate-600 border-slate-200'
-                    }`}
-                  >
-                    محفظة كاش أخرى
-                  </button>
-                </div>
+                <label className="block font-bold text-slate-700 mb-1.5">جهة استلام النقدية (Destination) *</label>
+                <select
+                  value={payAccountId}
+                  onChange={e => setPayAccountId(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-500"
+                >
+                  <optgroup label="حسابات الأكاديمية (تسمع في مقبوضات وخزينة الأكاديمية)">
+                    <option value="acc-center-cash">خزينة الأكاديمية (نقداً - Desk Cash)</option>
+                    <option value="acc-center-instapay">إنستاباي الأكاديمية (Academy InstaPay)</option>
+                    <option value="acc-center-wallet">محفظة فودافون كاش للأكاديمية (Academy Wallet)</option>
+                  </optgroup>
+                  <optgroup label="حسابات المديرة (تسمع في مستلم المديرة المباشر)">
+                    <option value="acc-mgr-wallet">محفظة فودافون كاش للمديرة (Manager Wallet - 01066383920)</option>
+                    <option value="acc-mgr-instapay">إنستاباي المديرة (Manager InstaPay - 01066383920)</option>
+                    <option value="acc-mgr-cash">استلام نقدي مباشر للمديرة</option>
+                  </optgroup>
+                  <optgroup label="أخرى">
+                    <option value="custom">محفظة / حساب آخر (تحديد يدوي)</option>
+                  </optgroup>
+                </select>
 
-                {payAccountOption === 'custom' && (
+                {payAccountId === 'custom' && (
                   <div className="mt-2">
                     <input
                       type="text"
@@ -750,33 +750,28 @@ export default function StudentProfilePage() {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">جهة استلام النقدية</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditAccountOption('center_desk')}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
-                      editAccountOption === 'center_desk'
-                        ? 'bg-purple-600 text-white border-purple-600'
-                        : 'bg-slate-50 text-slate-600 border-slate-200'
-                    }`}
-                  >
-                    خزينة الأكاديمية (Desk)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditAccountOption('custom')}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
-                      editAccountOption === 'custom'
-                        ? 'bg-purple-600 text-white border-purple-600'
-                        : 'bg-slate-50 text-slate-600 border-slate-200'
-                    }`}
-                  >
-                    محفظة كاش أخرى
-                  </button>
-                </div>
+                <label className="block font-bold text-slate-700 mb-1.5">جهة استلام النقدية (Destination) *</label>
+                <select
+                  value={editAccountId}
+                  onChange={e => setEditAccountId(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-purple-500"
+                >
+                  <optgroup label="حسابات الأكاديمية (تسمع في مقبوضات وخزينة الأكاديمية)">
+                    <option value="acc-center-cash">خزينة الأكاديمية (نقداً - Desk Cash)</option>
+                    <option value="acc-center-instapay">إنستاباي الأكاديمية (Academy InstaPay)</option>
+                    <option value="acc-center-wallet">محفظة فودافون كاش للأكاديمية (Academy Wallet)</option>
+                  </optgroup>
+                  <optgroup label="حسابات المديرة (تسمع في مستلم المديرة المباشر)">
+                    <option value="acc-mgr-wallet">محفظة فودافون كاش للمديرة (Manager Wallet - 01066383920)</option>
+                    <option value="acc-mgr-instapay">إنستاباي المديرة (Manager InstaPay - 01066383920)</option>
+                    <option value="acc-mgr-cash">استلام نقدي مباشر للمديرة</option>
+                  </optgroup>
+                  <optgroup label="أخرى">
+                    <option value="custom">محفظة / حساب آخر (تحديد يدوي)</option>
+                  </optgroup>
+                </select>
 
-                {editAccountOption === 'custom' && (
+                {editAccountId === 'custom' && (
                   <div className="mt-2">
                     <input
                       type="text"

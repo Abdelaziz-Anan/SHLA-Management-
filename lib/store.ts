@@ -56,21 +56,11 @@ export const INITIAL_CENTER: CenterInfo = {
 // Payment Destinations & Accounts
 export const INITIAL_ACCOUNTS: PaymentAccount[] = [
   {
-    id: 'acc-mgr-wallet',
-    center_id: 'center-1',
-    account_name: 'Manager Wallet (محفظة المديرة)',
-    account_type: 'Vodafone Cash',
-    account_number: '01066383920',
-    owner_type: 'manager',
-    is_active: true,
-    created_at: '2026-08-01T10:00:00Z',
-  },
-  {
     id: 'acc-center-cash',
     center_id: 'center-1',
-    account_name: 'Academy Desk Cash (خزينة الأكاديمية)',
+    account_name: 'خزينة الأكاديمية (Academy Desk Cash)',
     account_type: 'Cash Desk',
-    account_number: 'Academy Desk',
+    account_number: 'خزينة الأكاديمية',
     owner_type: 'center',
     is_active: true,
     created_at: '2026-08-01T10:00:00Z',
@@ -78,10 +68,50 @@ export const INITIAL_ACCOUNTS: PaymentAccount[] = [
   {
     id: 'acc-center-instapay',
     center_id: 'center-1',
-    account_name: 'Academy InstaPay (إنستاباي الأكاديمية)',
+    account_name: 'إنستاباي الأكاديمية (Academy InstaPay)',
     account_type: 'InstaPay',
     account_number: 'academy@instapay',
     owner_type: 'center',
+    is_active: true,
+    created_at: '2026-08-01T10:00:00Z',
+  },
+  {
+    id: 'acc-center-wallet',
+    center_id: 'center-1',
+    account_name: 'محفظة الأكاديمية (Vodafone Cash - الأكاديمية)',
+    account_type: 'Vodafone Cash',
+    account_number: 'فودافون كاش (الأكاديمية)',
+    owner_type: 'center',
+    is_active: true,
+    created_at: '2026-08-01T10:00:00Z',
+  },
+  {
+    id: 'acc-mgr-wallet',
+    center_id: 'center-1',
+    account_name: 'محفظة المديرة (Manager Wallet - 01066383920)',
+    account_type: 'Vodafone Cash',
+    account_number: '01066383920 (فودافون كاش - المديرة)',
+    owner_type: 'manager',
+    is_active: true,
+    created_at: '2026-08-01T10:00:00Z',
+  },
+  {
+    id: 'acc-mgr-instapay',
+    center_id: 'center-1',
+    account_name: 'إنستاباي المديرة (Manager InstaPay)',
+    account_type: 'InstaPay',
+    account_number: '01066383920@instapay',
+    owner_type: 'manager',
+    is_active: true,
+    created_at: '2026-08-01T10:00:00Z',
+  },
+  {
+    id: 'acc-mgr-cash',
+    center_id: 'center-1',
+    account_name: 'استلام نقدي مباشر للمديرة',
+    account_type: 'Cash',
+    account_number: 'نقداً للمديرة مباشرة',
+    owner_type: 'manager',
     is_active: true,
     created_at: '2026-08-01T10:00:00Z',
   },
@@ -309,8 +339,59 @@ class SystemStore {
 
   // Accounts
   getAccounts(): PaymentAccount[] {
-    const accounts = this.getItem('accounts', INITIAL_ACCOUNTS);
+    let accounts: PaymentAccount[] = this.getItem('accounts', INITIAL_ACCOUNTS);
     let changed = false;
+
+    // Ensure acc-center-wallet exists directly under acc-center-instapay
+    if (!accounts.some(a => a.id === 'acc-center-wallet')) {
+      const centerWallet: PaymentAccount = {
+        id: 'acc-center-wallet',
+        center_id: 'center-1',
+        account_name: 'محفظة الأكاديمية (Vodafone Cash - الأكاديمية)',
+        account_type: 'Vodafone Cash',
+        account_number: 'فودافون كاش (الأكاديمية)',
+        owner_type: 'center',
+        is_active: true,
+        created_at: '2026-08-01T10:00:00Z',
+      };
+      const instapayIdx = accounts.findIndex(a => a.id === 'acc-center-instapay');
+      if (instapayIdx !== -1) {
+        accounts.splice(instapayIdx + 1, 0, centerWallet);
+      } else {
+        accounts.push(centerWallet);
+      }
+      changed = true;
+    }
+
+    // Ensure manager accounts exist
+    if (!accounts.some(a => a.id === 'acc-mgr-instapay')) {
+      accounts.push({
+        id: 'acc-mgr-instapay',
+        center_id: 'center-1',
+        account_name: 'إنستاباي المديرة (Manager InstaPay)',
+        account_type: 'InstaPay',
+        account_number: '01066383920@instapay',
+        owner_type: 'manager',
+        is_active: true,
+        created_at: '2026-08-01T10:00:00Z',
+      });
+      changed = true;
+    }
+
+    if (!accounts.some(a => a.id === 'acc-mgr-cash')) {
+      accounts.push({
+        id: 'acc-mgr-cash',
+        center_id: 'center-1',
+        account_name: 'استلام نقدي مباشر للمديرة',
+        account_type: 'Cash',
+        account_number: 'نقداً للمديرة مباشرة',
+        owner_type: 'manager',
+        is_active: true,
+        created_at: '2026-08-01T10:00:00Z',
+      });
+      changed = true;
+    }
+
     const updated = accounts.map(a => {
       let acc = { ...a };
       if (acc.account_name.includes('السنتر')) {

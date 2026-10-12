@@ -17,7 +17,8 @@ INSERT INTO public.payment_accounts (id, center_id, account_name, account_type, 
 VALUES 
     ('c1111111-1111-1111-1111-111111111111', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Manager Wallet (محفظة المديرة)', 'Vodafone Cash', '01066383920', 'manager'),
     ('c2222222-2222-2222-2222-222222222222', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Academy Cash (خزينة الأكاديمية)', 'Cash Desk', 'Academy Desk', 'academy'),
-    ('c3333333-3333-3333-3333-333333333333', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'InstaPay Academy (إنستاباي)', 'InstaPay', 'academy@instapay', 'academy')
+    ('c3333333-3333-3333-3333-333333333333', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'InstaPay Academy (إنستاباي)', 'InstaPay', 'academy@instapay', 'academy'),
+    ('c4444444-4444-4444-4444-444444444444', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Academy Wallet (محفظة الأكاديمية)', 'Vodafone Cash', 'Vodafone Cash Academy', 'academy')
 ON CONFLICT (id) DO NOTHING;
 
 -- 3. INSERT DEMO GROUP 221 (Based on WhatsApp Image)

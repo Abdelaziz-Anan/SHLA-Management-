@@ -66,7 +66,7 @@ export default function GroupDetailsPage() {
   const [editPhone, setEditPhone] = useState('');
   const [editBookingDate, setEditBookingDate] = useState('');
   const [editBookingMethod, setEditBookingMethod] = useState<BookingMethod>('Center');
-  const [accountTypeOption, setAccountTypeOption] = useState<'center_desk' | 'custom'>('center_desk');
+  const [accountTypeOption, setAccountTypeOption] = useState<string>('acc-center-cash');
   const [customWalletNumber, setCustomWalletNumber] = useState('');
   const [editPaidAmount, setEditPaidAmount] = useState<number>(0);
   const [editCoursePrice, setEditCoursePrice] = useState<number>(540);
@@ -166,12 +166,19 @@ export default function GroupDetailsPage() {
     setEditCoursePrice(gs.course_price || 540);
 
     const currentAccNum = gs.receiving_account_number || '';
-    if (currentAccNum === 'Center Desk' || currentAccNum === 'Center Desk Cash' || currentAccNum.includes('خزينة')) {
-      setAccountTypeOption('center_desk');
+    const accId = gs.receiving_account_id || gs.payments?.[0]?.receiving_account_id;
+    if (accId && ['acc-center-cash', 'acc-center-instapay', 'acc-center-wallet', 'acc-mgr-wallet', 'acc-mgr-instapay', 'acc-mgr-cash'].includes(accId)) {
+      setAccountTypeOption(accId);
       setCustomWalletNumber('');
-    } else {
+    } else if (currentAccNum === 'Center Desk' || currentAccNum === 'Center Desk Cash' || currentAccNum.includes('خزينة')) {
+      setAccountTypeOption('acc-center-cash');
+      setCustomWalletNumber('');
+    } else if (currentAccNum && currentAccNum !== '-') {
       setAccountTypeOption('custom');
-      setCustomWalletNumber(currentAccNum !== '-' ? currentAccNum : '');
+      setCustomWalletNumber(currentAccNum);
+    } else {
+      setAccountTypeOption(accId || 'acc-center-cash');
+      setCustomWalletNumber('');
     }
     setEditError('');
   };
@@ -186,19 +193,18 @@ export default function GroupDetailsPage() {
       return;
     }
 
-    let finalReceivingAccId = 'acc-center-cash';
+    let finalReceivingAccId = accountTypeOption;
     let finalCustomAcc = '';
 
-    if (accountTypeOption === 'center_desk') {
-      finalReceivingAccId = 'acc-center-cash';
-      finalCustomAcc = 'Center Desk';
-    } else {
+    if (accountTypeOption === 'custom') {
       if (!customWalletNumber.trim()) {
         setEditError('يرجى كتابة رقم محفظة/حساب التحويل');
         return;
       }
       finalReceivingAccId = 'acc-mgr-wallet';
       finalCustomAcc = customWalletNumber.trim();
+    } else if (accountTypeOption === 'acc-center-cash') {
+      finalCustomAcc = 'Center Desk';
     }
 
     try {
@@ -588,7 +594,7 @@ export default function GroupDetailsPage() {
                         <td className="p-4 font-semibold text-slate-600" dir="ltr">{gs.student?.phone}</td>
                         <td className="p-4 text-slate-500">{formatDate(gs.booking_date)}</td>
                         <td className="p-4 font-bold text-slate-800">{gs.booking_method}</td>
-                        <td className="p-4 font-extrabold text-purple-700" dir="ltr">
+                        <td className="p-4 font-extrabold text-purple-700" dir="auto">
                           {gs.receiving_account_number || '-'}
                         </td>
                         <td className="p-4 text-center">
@@ -709,32 +715,26 @@ export default function GroupDetailsPage() {
 
               {/* Destination Account Selection */}
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">جهة استلام النقدية (Destination)</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setAccountTypeOption('center_desk')}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
-                      accountTypeOption === 'center_desk'
-                        ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
-                        : 'bg-slate-50 text-slate-600 border-slate-200'
-                    }`}
-                  >
-                    خزينة الأكاديمية (Desk)
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setAccountTypeOption('custom')}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
-                      accountTypeOption === 'custom'
-                        ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
-                        : 'bg-slate-50 text-slate-600 border-slate-200'
-                    }`}
-                  >
-                    محفظة كاش / بنك أخرى
-                  </button>
-                </div>
+                <label className="block font-bold text-slate-700 mb-1.5">جهة استلام النقدية (Destination) *</label>
+                <select
+                  value={accountTypeOption}
+                  onChange={e => setAccountTypeOption(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-purple-500"
+                >
+                  <optgroup label="حسابات الأكاديمية (تسمع في مقبوضات وخزينة الأكاديمية)">
+                    <option value="acc-center-cash">خزينة الأكاديمية (نقداً - Desk Cash)</option>
+                    <option value="acc-center-instapay">إنستاباي الأكاديمية (Academy InstaPay)</option>
+                    <option value="acc-center-wallet">محفظة فودافون كاش للأكاديمية (Academy Wallet)</option>
+                  </optgroup>
+                  <optgroup label="حسابات المديرة (تسمع في مستلم المديرة المباشر)">
+                    <option value="acc-mgr-wallet">محفظة فودافون كاش للمديرة (Manager Wallet - 01066383920)</option>
+                    <option value="acc-mgr-instapay">إنستاباي المديرة (Manager InstaPay - 01066383920)</option>
+                    <option value="acc-mgr-cash">استلام نقدي مباشر للمديرة</option>
+                  </optgroup>
+                  <optgroup label="أخرى">
+                    <option value="custom">محفظة / حساب آخر (تحديد يدوي)</option>
+                  </optgroup>
+                </select>
 
                 {accountTypeOption === 'custom' && (
                   <div className="mt-2">

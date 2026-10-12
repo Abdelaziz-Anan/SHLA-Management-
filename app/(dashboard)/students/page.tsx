@@ -481,11 +481,18 @@ export default function StudentsPage() {
                   <select
                     value={formData.receiving_account_id}
                     onChange={e => setFormData({ ...formData, receiving_account_id: e.target.value })}
-                    className="w-full p-2 border border-slate-200 rounded-xl font-bold text-slate-800 bg-white text-xs"
+                    className="w-full p-2.5 border border-slate-200 rounded-xl font-bold text-slate-800 bg-white text-xs focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="acc-center-cash">خزينة الأكاديمية (Academy Desk Cash)</option>
-                    <option value="acc-mgr-wallet">محفظة المديرة (Manager Wallet - 01066383920)</option>
-                    <option value="acc-center-instapay">إنستاباي الأكاديمية (Academy InstaPay)</option>
+                    <optgroup label="حسابات الأكاديمية (تسمع في مقبوضات وخزينة الأكاديمية)">
+                      <option value="acc-center-cash">خزينة الأكاديمية (نقداً - Desk Cash)</option>
+                      <option value="acc-center-instapay">إنستاباي الأكاديمية (Academy InstaPay)</option>
+                      <option value="acc-center-wallet">محفظة فودافون كاش للأكاديمية (Academy Wallet)</option>
+                    </optgroup>
+                    <optgroup label="حسابات المديرة (تسمع في مستلم المديرة المباشر)">
+                      <option value="acc-mgr-wallet">محفظة فودافون كاش للمديرة (Manager Wallet - 01066383920)</option>
+                      <option value="acc-mgr-instapay">إنستاباي المديرة (Manager InstaPay - 01066383920)</option>
+                      <option value="acc-mgr-cash">استلام نقدي مباشر للمديرة</option>
+                    </optgroup>
                   </select>
                 </div>
               </div>
