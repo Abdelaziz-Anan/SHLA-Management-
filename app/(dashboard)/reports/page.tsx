@@ -35,10 +35,16 @@ export default function ReportsPage() {
   const [centerInfo, setCenterInfo] = useState(store.getCenter());
 
   useEffect(() => {
-    setFinanceSummary(getFinanceSummary());
-    setGroupReports(getGroupRevenueReport());
-    setDebtors(getOutstandingDebtorsReport());
-    setCenterInfo(store.getCenter());
+    const loadReportsData = () => {
+      setFinanceSummary(getFinanceSummary());
+      setGroupReports(getGroupRevenueReport());
+      setDebtors(getOutstandingDebtorsReport());
+      setCenterInfo(store.getCenter());
+    };
+
+    loadReportsData();
+    window.addEventListener('center_sys_sync', loadReportsData);
+    return () => window.removeEventListener('center_sys_sync', loadReportsData);
   }, []);
 
   const chartData = groupReports.map(gr => ({

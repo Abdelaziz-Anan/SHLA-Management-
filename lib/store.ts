@@ -310,21 +310,42 @@ class SystemStore {
         return;
       }
 
+      const cloudKeys = new Set<string>();
       if (data && data.length > 0) {
-        let hasChanges = false;
         for (const row of data) {
           if (row.key && row.value !== undefined) {
+            cloudKeys.add(row.key);
             this.cache.set(row.key, row.value);
             try {
               localStorage.setItem(`center_sys_${row.key}`, JSON.stringify(row.value));
             } catch {}
-            hasChanges = true;
           }
         }
-        if (hasChanges) {
-          window.dispatchEvent(new CustomEvent('center_sys_sync', { detail: { all: true } }));
+      }
+
+      // Check all system collections: if ANY collection is missing in Supabase,
+      // upload current device's local data so cloud has all collections synced
+      const systemCollections: Array<{ key: string; getter: () => any }> = [
+        { key: 'users', getter: () => this.getUsers() },
+        { key: 'students', getter: () => this.getStudents() },
+        { key: 'groups', getter: () => this.getGroups() },
+        { key: 'sessions', getter: () => this.getSessions() },
+        { key: 'group_students', getter: () => this.getGroupStudents() },
+        { key: 'payments', getter: () => this.getPayments() },
+        { key: 'accounts', getter: () => this.getAccounts() },
+        { key: 'center', getter: () => this.getCenter() },
+        { key: 'settlements', getter: () => this.getSettlements() },
+        { key: 'audit_logs', getter: () => this.getAuditLogs() },
+      ];
+
+      for (const item of systemCollections) {
+        if (!cloudKeys.has(item.key)) {
+          const val = item.getter();
+          this.pushToCloud(item.key, val);
         }
       }
+
+      window.dispatchEvent(new CustomEvent('center_sys_sync', { detail: { all: true } }));
     } catch (e) {
       console.warn('Supabase cloud sync notice:', e);
     }

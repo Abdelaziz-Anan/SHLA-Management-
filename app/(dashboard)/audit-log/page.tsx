@@ -22,6 +22,9 @@ export default function AuditLogPage() {
 
   useEffect(() => {
     loadData();
+    const handleSync = () => loadData();
+    window.addEventListener('center_sys_sync', handleSync);
+    return () => window.removeEventListener('center_sys_sync', handleSync);
   }, []);
 
   const handleDeleteLog = (logId: string) => {
