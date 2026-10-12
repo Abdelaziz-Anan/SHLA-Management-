@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser } from '@/services/auth-service';
+import { store } from '@/lib/store';
 import { UserProfile } from '@/types';
 import { Sidebar } from '@/components/Sidebar';
 import { Navbar } from '@/components/Navbar';
@@ -17,7 +18,13 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const refreshUser = () => {
+    let isMounted = true;
+
+    const initDashboard = async () => {
+      // 1. Fetch fresh cloud state first to guarantee 100% sync on every device
+      await store.syncFromCloud(false);
+      if (!isMounted) return;
+
       const currentUser = getCurrentUser();
       if (!currentUser) {
         router.push('/login');
@@ -27,9 +34,17 @@ export default function DashboardLayout({
       setLoading(false);
     };
 
-    refreshUser();
-    window.addEventListener('center_sys_sync', refreshUser);
-    return () => window.removeEventListener('center_sys_sync', refreshUser);
+    const handleSync = () => {
+      const currentUser = getCurrentUser();
+      if (currentUser) setUser(currentUser);
+    };
+
+    initDashboard();
+    window.addEventListener('center_sys_sync', handleSync);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('center_sys_sync', handleSync);
+    };
   }, [router]);
 
   if (loading) {

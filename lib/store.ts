@@ -288,66 +288,70 @@ class SystemStore {
     if (this.isBrowser) {
       setTimeout(() => {
         this.initCloud();
-      }, 50);
+      }, 30);
+      // Continuous background sync every 3 seconds to guarantee instant multi-device reflection
+      setInterval(() => {
+        this.syncFromCloud(true);
+      }, 3000);
     }
   }
 
   async initCloud() {
     if (this.hasInitializedCloud || !this.isBrowser) return;
     this.hasInitializedCloud = true;
-    await this.syncFromCloud();
+    await this.syncFromCloud(true);
     this.setupRealtime();
   }
 
-  async syncFromCloud() {
+  async syncFromCloud(broadcast = true) {
     if (!this.isBrowser) return;
-    const supabase = getSupabase();
-    if (!supabase) return;
 
     try {
-      const { data, error } = await supabase.from('app_store').select('*');
-      if (error) {
-        return;
-      }
+      let cloudData: Record<string, any> | null = null;
 
-      const cloudKeys = new Set<string>();
-      if (data && data.length > 0) {
-        for (const row of data) {
-          if (row.key && row.value !== undefined) {
-            cloudKeys.add(row.key);
-            this.cache.set(row.key, row.value);
-            try {
-              localStorage.setItem(`center_sys_${row.key}`, JSON.stringify(row.value));
-            } catch {}
+      // 1. First try same-origin API route (works everywhere, no CORS, bypasses mobile blockers)
+      try {
+        const res = await fetch('/api/sync', { cache: 'no-store' });
+        if (res.ok) {
+          cloudData = await res.json();
+        }
+      } catch {}
+
+      // 2. Fallback to direct Supabase client
+      if (!cloudData) {
+        const supabase = getSupabase();
+        if (supabase) {
+          const { data } = await supabase.from('app_store').select('*');
+          if (data && data.length > 0) {
+            cloudData = {};
+            for (const row of data) {
+              cloudData[row.key] = row.value;
+            }
           }
         }
       }
 
-      // Check all system collections: if ANY collection is missing in Supabase,
-      // upload current device's local data so cloud has all collections synced
-      const systemCollections: Array<{ key: string; getter: () => any }> = [
-        { key: 'users', getter: () => this.getUsers() },
-        { key: 'students', getter: () => this.getStudents() },
-        { key: 'groups', getter: () => this.getGroups() },
-        { key: 'sessions', getter: () => this.getSessions() },
-        { key: 'group_students', getter: () => this.getGroupStudents() },
-        { key: 'payments', getter: () => this.getPayments() },
-        { key: 'accounts', getter: () => this.getAccounts() },
-        { key: 'center', getter: () => this.getCenter() },
-        { key: 'settlements', getter: () => this.getSettlements() },
-        { key: 'audit_logs', getter: () => this.getAuditLogs() },
-      ];
+      if (cloudData && Object.keys(cloudData).length > 0) {
+        let hasChanges = false;
+        for (const [key, val] of Object.entries(cloudData)) {
+          const currentCached = this.cache.get(key);
+          const currentStr = JSON.stringify(currentCached);
+          const newStr = JSON.stringify(val);
+          if (currentStr !== newStr) {
+            this.cache.set(key, val);
+            try {
+              localStorage.setItem(`center_sys_${key}`, newStr);
+            } catch {}
+            hasChanges = true;
+          }
+        }
 
-      for (const item of systemCollections) {
-        if (!cloudKeys.has(item.key)) {
-          const val = item.getter();
-          this.pushToCloud(item.key, val);
+        if (hasChanges && broadcast) {
+          window.dispatchEvent(new CustomEvent('center_sys_sync', { detail: { all: true } }));
         }
       }
-
-      window.dispatchEvent(new CustomEvent('center_sys_sync', { detail: { all: true } }));
     } catch (e) {
-      console.warn('Supabase cloud sync notice:', e);
+      console.warn('Sync notice:', e);
     }
   }
 
@@ -381,22 +385,30 @@ class SystemStore {
 
   private async pushToCloud(key: string, value: any) {
     if (!this.isBrowser) return;
+
+    // 1. Same-origin API route (instant on mobile and laptop)
+    try {
+      fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, value }),
+      }).catch(() => {});
+    } catch {}
+
+    // 2. Direct Supabase client
     const supabase = getSupabase();
     if (!supabase) return;
 
     try {
-      const { error } = await supabase
+      await supabase
         .from('app_store')
         .upsert({
           key,
           value,
           updated_at: new Date().toISOString(),
         });
-      if (error) {
-        console.warn(`Supabase saving ${key} notice:`, error.message);
-      }
     } catch (err) {
-      console.warn(`Supabase network push error for ${key}:`, err);
+      console.warn(`Supabase network push notice for ${key}:`, err);
     }
   }
 

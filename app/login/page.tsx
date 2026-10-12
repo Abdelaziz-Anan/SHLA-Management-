@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { loginWithCredentials } from '@/services/auth-service';
+import { store } from '@/lib/store';
 import { useLanguage } from '@/lib/language-context';
 import { Lock, User, Eye, EyeOff, AlertCircle, Globe } from 'lucide-react';
 
@@ -14,6 +15,10 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    store.syncFromCloud(false);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
