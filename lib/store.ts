@@ -18,7 +18,7 @@ export const INITIAL_USERS: UserProfile[] = [
   },
   {
     id: 'usr-assistant-1',
-    full_name: 'مساعد 1 - ريم (Assistant 1)',
+    full_name: 'Admin 1 - ريم',
     email: 'assistant1@center.com',
     phone: '01000000002',
     role: 'assistant',
@@ -29,7 +29,7 @@ export const INITIAL_USERS: UserProfile[] = [
   },
   {
     id: 'usr-assistant-2',
-    full_name: 'مساعد 2 - عمر (Assistant 2)',
+    full_name: 'Admin 2 - عمر',
     email: 'assistant2@center.com',
     phone: '01000000003',
     role: 'assistant',
@@ -313,11 +313,16 @@ class SystemStore {
     const users = this.getItem('users', INITIAL_USERS);
     let changed = false;
     const updated = users.map(u => {
-      if (u.role === 'manager' && u.phone !== '01066383920') {
+      let user = { ...u };
+      if (user.role === 'manager' && user.phone !== '01066383920') {
         changed = true;
-        return { ...u, phone: '01066383920' };
+        user.phone = '01066383920';
       }
-      return u;
+      if (user.full_name && user.full_name.includes('مساعد')) {
+        user.full_name = user.full_name.replace(/مساعد/g, 'Admin').replace(/\(Assistant\s*\d*\)/g, '').trim();
+        changed = true;
+      }
+      return user;
     });
     if (changed) {
       this.setItem('users', updated);

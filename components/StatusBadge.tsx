@@ -95,7 +95,7 @@ export function StatusBadge({ status, type = 'payment', className }: StatusBadge
       badgeStyle = 'bg-blue-50/90 text-blue-800 border-blue-200/90 font-bold';
       dotColor = 'bg-blue-500';
       dotShadow = 'shadow-[0_0_6px_rgba(59,130,246,0.4)]';
-      label = 'مساعد (Assistant)';
+      label = 'Admin';
     }
   }
 
