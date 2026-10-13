@@ -436,6 +436,9 @@ class SystemStore {
     } catch (e) {
       console.error('Failed to save to localStorage', e);
     }
+    try {
+      window.dispatchEvent(new CustomEvent('center_sys_sync', { detail: { key, value } }));
+    } catch {}
     this.pushToCloud(key, value);
   }
 

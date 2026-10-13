@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { UserProfile } from '@/types';
+import { store } from '@/lib/store';
 import { useLanguage } from '@/lib/language-context';
 import {
   LayoutDashboard,
@@ -34,7 +35,18 @@ export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
   const { lang, toggleLang, t } = useLanguage();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [centerName, setCenterName] = useState('SHLA Management');
   const isManager = user?.role === 'manager';
+
+  useEffect(() => {
+    const updateInfo = () => {
+      const center = store.getCenter();
+      setCenterName(center?.name || 'SHLA Management');
+    };
+    updateInfo();
+    window.addEventListener('center_sys_sync', updateInfo);
+    return () => window.removeEventListener('center_sys_sync', updateInfo);
+  }, []);
 
   const navItems = [
     { label: t('الرئيسية', 'Dashboard'), href: '/dashboard', icon: LayoutDashboard, managerOnly: false },
@@ -77,7 +89,7 @@ export function Sidebar({ user }: SidebarProps) {
             className="w-10 h-10 rounded-xl object-cover border border-slate-700 shadow-md flex-shrink-0"
           />
           <div className="overflow-hidden">
-            <h2 className="font-extrabold text-sm tracking-wide text-white truncate">SHLA Management</h2>
+            <h2 className="font-extrabold text-sm tracking-wide text-white truncate">{centerName}</h2>
             <p className="text-[11px] text-slate-400 truncate">Samar Hamdy Academy</p>
           </div>
         </div>
@@ -207,7 +219,7 @@ export function Sidebar({ user }: SidebarProps) {
                   className="w-9 h-9 rounded-xl object-cover border border-slate-700"
                 />
                 <div>
-                  <h3 className="font-black text-sm text-white">SHLA Management</h3>
+                  <h3 className="font-black text-sm text-white">{centerName}</h3>
                   <p className="text-[11px] text-slate-400">{user?.full_name}</p>
                 </div>
               </div>

@@ -29,6 +29,7 @@ export default function DashboardPage() {
   const [groups, setGroups] = useState(getGroups());
   const [payments, setPayments] = useState<any[]>([]);
   const [coverUrl, setCoverUrl] = useState<string>('/cover.jpeg');
+  const [centerName, setCenterName] = useState<string>('SHLA Management');
 
   useEffect(() => {
     const loadDashboardData = () => {
@@ -36,6 +37,7 @@ export default function DashboardPage() {
       setGroups(getGroups());
       const center = store.getCenter();
       setCoverUrl(center.cover_url || '/cover.jpeg');
+      setCenterName(center.name || 'SHLA Management');
       setPayments(store.getPayments());
     };
 
@@ -84,7 +86,7 @@ export default function DashboardPage() {
                   <span className="truncate">Samar Hamdy Language Academy</span>
                 </div>
                 <h1 className="text-2xl lg:text-3xl font-black text-white tracking-tight drop-shadow-md truncate">
-                  SHLA Management
+                  {centerName}
                 </h1>
                 <p className="text-xs text-slate-300 font-medium max-w-xl drop-shadow-sm line-clamp-2">
                   {t(
@@ -141,7 +143,7 @@ export default function DashboardPage() {
                   <span className="truncate">Samar Hamdy Language Academy</span>
                 </div>
                 <h1 className="text-base font-black text-white tracking-tight truncate">
-                  SHLA Management
+                  {centerName}
                 </h1>
                 <p className="text-[10px] text-slate-400 font-medium truncate">
                   {t('ملخص المجموعات، الطلاب، وحركة الخزينة', 'Groups, students, and treasury summary')}

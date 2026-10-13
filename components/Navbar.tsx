@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserProfile } from '@/types';
 import { StatusBadge } from './StatusBadge';
 import { logoutUser } from '@/services/auth-service';
+import { store } from '@/lib/store';
 import { useLanguage } from '@/lib/language-context';
 import { LogOut, Globe } from 'lucide-react';
 import Link from 'next/link';
@@ -14,6 +15,17 @@ interface NavbarProps {
 
 export function Navbar({ user }: NavbarProps) {
   const { lang, toggleLang, t } = useLanguage();
+  const [centerName, setCenterName] = useState('SHLA Management');
+
+  useEffect(() => {
+    const updateInfo = () => {
+      const center = store.getCenter();
+      setCenterName(center?.name || 'SHLA Management');
+    };
+    updateInfo();
+    window.addEventListener('center_sys_sync', updateInfo);
+    return () => window.removeEventListener('center_sys_sync', updateInfo);
+  }, []);
 
   return (
     <header className="relative bg-white/80 backdrop-blur-xl border-b border-slate-200/70 sticky top-0 z-30 shadow-xs after:absolute after:bottom-0 after:inset-x-0 after:h-[1.5px] after:bg-gradient-to-r after:from-transparent after:via-blue-500/25 after:to-transparent">
@@ -28,7 +40,7 @@ export function Navbar({ user }: NavbarProps) {
             />
             <div>
               <h1 className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-none">
-                SHLA Management
+                {centerName}
               </h1>
               <p className="text-[10px] text-slate-500 font-medium hidden sm:block mt-0.5">
                 Samar Hamdy Language Academy

@@ -15,9 +15,11 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [centerName, setCenterName] = useState('SHLA Management');
 
   useEffect(() => {
     store.syncFromCloud(false);
+    setCenterName(store.getCenter().name || 'SHLA Management');
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -60,7 +62,7 @@ export default function LoginPage() {
             className="w-24 h-24 rounded-3xl object-cover border-4 border-slate-700 shadow-2xl mx-auto mb-4 animate-float shadow-glow-blue"
           />
           <h2 className="text-3xl font-extrabold text-white tracking-tight">
-            SHLA Management
+            {centerName}
           </h2>
           <p className="mt-2 text-sm text-slate-400 font-medium">
             Samar Hamdy Language Academy System
