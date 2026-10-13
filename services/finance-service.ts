@@ -80,6 +80,10 @@ export function getFinanceSummary(filterMonth?: string): FinanceSummary {
     totalOutstanding += Math.max(0, gs.course_price - paid);
   }
 
+  // Active enrolled students count (students who are actually in active groups)
+  const activeEnrolledStudentIds = new Set(groupStudents.map(gs => gs.student_id));
+  const activeStudentCount = activeEnrolledStudentIds.size;
+
   return {
     total_collected: totalCollected,
     received_by_manager: managerReceived,
@@ -88,7 +92,7 @@ export function getFinanceSummary(filterMonth?: string): FinanceSummary {
     remaining_with_center: remainingWithCenter,
     total_outstanding_students: totalOutstanding,
     payment_count: payments.length,
-    student_count: students.length,
+    student_count: activeStudentCount,
     group_count: groups.length,
   };
 }

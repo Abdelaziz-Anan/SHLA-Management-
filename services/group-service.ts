@@ -290,7 +290,18 @@ export function deleteGroup(groupId: string): void {
 
   // Clean enrollments
   const groupStudents = store.getGroupStudents();
-  store.saveGroupStudents(groupStudents.filter(gs => gs.group_id !== groupId));
+  const remainingEnrollments = groupStudents.filter(gs => gs.group_id !== groupId);
+  const deletedEnrollmentIds = new Set(groupStudents.filter(gs => gs.group_id === groupId).map(gs => gs.id));
+  store.saveGroupStudents(remainingEnrollments);
+
+  // Clean orphaned students who have no remaining active enrollments in any group
+  const activeStudentIds = new Set(remainingEnrollments.map(gs => gs.student_id));
+  const students = store.getStudents();
+  store.saveStudents(students.filter(s => activeStudentIds.has(s.id)));
+
+  // Clean payments for deleted group enrollments
+  const payments = store.getPayments();
+  store.savePayments(payments.filter(p => !deletedEnrollmentIds.has(p.group_student_id)));
 
   store.addAuditLog({
     user_id: currentUser?.id,
@@ -312,6 +323,8 @@ export function resetAllGroups(): void {
   store.saveGroups([]);
   store.saveSessions([]);
   store.saveGroupStudents([]);
+  store.saveStudents([]);
+  store.savePayments([]);
 
   store.addAuditLog({
     user_id: currentUser?.id,
