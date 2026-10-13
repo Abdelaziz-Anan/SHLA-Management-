@@ -733,20 +733,30 @@ export default function GroupDetailsPage() {
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">سعر الكورس للمجموعة</label>
                   <input
-                    type="number"
-                    value={editCoursePrice}
-                    onChange={e => setEditCoursePrice(Number(e.target.value))}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={editCoursePrice ? editCoursePrice : ''}
+                    onChange={e => {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      setEditCoursePrice(val === '' ? 0 : Number(val));
+                    }}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-purple-500 focus:bg-white"
                   />
                 </div>
 
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">المبلغ المسدد (EGP)</label>
                   <input
-                    type="number"
-                    value={editPaidAmount}
-                    onChange={e => setEditPaidAmount(Number(e.target.value))}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-black text-emerald-600 text-sm"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={editPaidAmount ? editPaidAmount : ''}
+                    onChange={e => {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      setEditPaidAmount(val === '' ? 0 : Number(val));
+                    }}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-black text-emerald-600 text-sm focus:ring-2 focus:ring-purple-500 focus:bg-white"
                   />
                 </div>
               </div>

@@ -41,7 +41,7 @@ export default function StudentsPage() {
     phone: '',
     group_id: '',
     booking_method: 'Center' as BookingMethod,
-    initial_payment_amount: 500,
+    initial_payment_amount: 0,
     payment_method: 'Vodafone Cash' as PaymentMethod,
     receiving_account_id: 'acc-center-cash',
     receipt_url: '',
@@ -156,7 +156,7 @@ export default function StudentsPage() {
         phone: '',
         group_id: groups[0]?.id || '',
         booking_method: 'Center',
-        initial_payment_amount: 500,
+        initial_payment_amount: 0,
         payment_method: 'Vodafone Cash',
         receiving_account_id: 'acc-center-cash',
         receipt_url: '',
@@ -491,11 +491,15 @@ export default function StudentsPage() {
                   <div>
                     <label className="block text-slate-600 mb-1 font-semibold">المبلغ المدفوع (EGP)</label>
                     <input
-                      type="number"
-                      min="0"
-                      value={formData.initial_payment_amount}
-                      onChange={e => setFormData({ ...formData, initial_payment_amount: Number(e.target.value) })}
-                      className="w-full p-2 border border-slate-200 rounded-xl font-black text-emerald-600 bg-white"
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="أدخل المبلغ (مثال: 500)"
+                      value={formData.initial_payment_amount ? formData.initial_payment_amount : ''}
+                      onChange={e => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        setFormData({ ...formData, initial_payment_amount: val === '' ? 0 : Number(val) });
+                      }}
+                      className="w-full p-2.5 border border-slate-200 rounded-xl font-black text-emerald-600 bg-white text-base focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 

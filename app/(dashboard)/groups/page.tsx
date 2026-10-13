@@ -58,7 +58,7 @@ export default function GroupsPage() {
     start_time: '07:00 PM',
     end_time: '08:30 PM',
     total_sessions: 8,
-    course_price: 540,
+    course_price: 0,
     days: ['Sunday', 'Wednesday'],
     notes: '',
   });
@@ -158,6 +158,20 @@ export default function GroupsPage() {
       });
 
       setIsModalOpen(false);
+      setFormData({
+        group_number: '',
+        course_name: 'General English (Adults)',
+        level: 'Level 1',
+        trainer_name: 'Dr. Samar',
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
+        start_time: '07:00 PM',
+        end_time: '08:30 PM',
+        total_sessions: 8,
+        course_price: 0,
+        days: ['Sunday', 'Wednesday'],
+        notes: '',
+      });
       loadData();
       alert('تم إنشاء المجموعة بنجاح!');
     } catch (err: any) {
@@ -386,11 +400,15 @@ export default function GroupsPage() {
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">سعر الكورس (EGP) *</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     required
-                    min="0"
-                    value={formData.course_price}
-                    onChange={e => setFormData({ ...formData, course_price: Number(e.target.value) })}
+                    placeholder="أدخل السعر (مثال: 800)"
+                    value={formData.course_price ? formData.course_price : ''}
+                    onChange={e => {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      setFormData({ ...formData, course_price: val === '' ? 0 : Number(val) });
+                    }}
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-black text-emerald-600 focus:ring-2 focus:ring-blue-500 focus:bg-white"
                   />
                 </div>
@@ -434,11 +452,15 @@ export default function GroupsPage() {
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">عدد المحاضرات</label>
                   <input
-                    type="number"
-                    min="1"
-                    value={formData.total_sessions}
-                    onChange={e => setFormData({ ...formData, total_sessions: Number(e.target.value) })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="8"
+                    value={formData.total_sessions ? formData.total_sessions : ''}
+                    onChange={e => {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      setFormData({ ...formData, total_sessions: val === '' ? 0 : Number(val) });
+                    }}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500 focus:bg-white"
                   />
                 </div>
               </div>

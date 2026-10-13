@@ -59,7 +59,7 @@ export default function StudentProfilePage() {
   const [activePaymentForReceipt, setActivePaymentForReceipt] = useState<Payment | null>(null);
 
   // New Payment Form
-  const [payAmount, setPayAmount] = useState<number>(500);
+  const [payAmount, setPayAmount] = useState<number>(0);
   const [payMethod, setPayMethod] = useState<PaymentMethod>('Vodafone Cash');
   const [payAccountId, setPayAccountId] = useState<string>('acc-center-wallet');
   const [payCustomWallet, setPayCustomWallet] = useState<string>('');
@@ -624,12 +624,16 @@ export default function StudentProfilePage() {
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">المبلغ (EGP) *</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     required
-                    min="1"
-                    value={payAmount}
-                    onChange={e => setPayAmount(Number(e.target.value))}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-base font-black text-emerald-600 focus:ring-2 focus:ring-emerald-500"
+                    placeholder="أدخل المبلغ"
+                    value={payAmount ? payAmount : ''}
+                    onChange={e => {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      setPayAmount(val === '' ? 0 : Number(val));
+                    }}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-base font-black text-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:bg-white"
                   />
                   <p className="text-[10px] text-slate-400 mt-1 font-semibold">المتبقي: {formatCurrency(gs.remaining_balance || 0)}</p>
                 </div>
@@ -750,12 +754,16 @@ export default function StudentProfilePage() {
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">المبلغ (EGP) *</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     required
-                    min="1"
-                    value={editPayAmount}
-                    onChange={e => setEditPayAmount(Number(e.target.value))}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-base font-black text-emerald-600 focus:ring-2 focus:ring-purple-500"
+                    placeholder="أدخل المبلغ"
+                    value={editPayAmount ? editPayAmount : ''}
+                    onChange={e => {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      setEditPayAmount(val === '' ? 0 : Number(val));
+                    }}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-base font-black text-emerald-600 focus:ring-2 focus:ring-purple-500 focus:bg-white"
                   />
                 </div>
 

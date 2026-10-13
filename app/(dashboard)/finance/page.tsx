@@ -39,7 +39,7 @@ export default function FinancePage() {
   const isManager = currentUser?.role === 'manager';
 
   // Settlement Form State
-  const [settleAmount, setSettleAmount] = useState<number>(1000);
+  const [settleAmount, setSettleAmount] = useState<number>(0);
   const [settleNotes, setSettleNotes] = useState<string>('تسليم نقدية الأكاديمية اليومية للمديرة');
   const [error, setError] = useState<string>('');
 
@@ -319,11 +319,15 @@ export default function FinancePage() {
               <div>
                 <label className="block font-bold text-slate-700 mb-1">المبلغ المراد تسليمه للمديرة (EGP) *</label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   required
-                  min="1"
-                  value={settleAmount}
-                  onChange={e => setSettleAmount(Number(e.target.value))}
+                  placeholder="أدخل المبلغ"
+                  value={settleAmount ? settleAmount : ''}
+                  onChange={e => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    setSettleAmount(val === '' ? 0 : Number(val));
+                  }}
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-lg font-black text-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:bg-white"
                 />
                 <p className="text-[11px] text-slate-400 mt-1 font-semibold">
