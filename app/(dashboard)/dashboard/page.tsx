@@ -59,34 +59,34 @@ export default function DashboardPage() {
     <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">
       {/* Responsive Academy Hero Banner */}
       <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-slate-800/80 bg-slate-950 group">
-        {/* Cover Background Image Container */}
-        <div className="w-full min-h-[220px] sm:min-h-[260px] lg:h-72 relative flex flex-col justify-end">
+        {/* DESKTOP HERO (sm: and up) - Full wide cinematic view */}
+        <div className="hidden sm:flex sm:min-h-[260px] lg:h-72 relative flex-col justify-end">
           <img
             src={coverUrl}
             alt="SHLA Academy Cover Banner"
-            className="absolute inset-0 w-full h-full object-cover object-[center_top] sm:object-center transform group-hover:scale-103 transition-transform duration-700 ease-out opacity-85 sm:opacity-90"
+            className="absolute inset-0 w-full h-full object-cover object-center transform group-hover:scale-103 transition-transform duration-700 ease-out opacity-90"
           />
           {/* Subtle cinematic gradient overlay allowing banner visuals to pop */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-slate-950/15 sm:via-slate-950/35" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/35 to-slate-950/10" />
 
           {/* Controls & Info Container */}
-          <div className="relative z-10 p-3.5 sm:p-6 lg:p-7 flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4">
+          <div className="relative z-10 p-6 lg:p-7 flex flex-row items-end justify-between gap-4">
             {/* Academy Title & Badge Card */}
-            <div className="flex items-center gap-3 sm:gap-4 bg-slate-950/65 backdrop-blur-md sm:bg-transparent sm:backdrop-blur-none p-3 sm:p-0 rounded-2xl border border-white/10 sm:border-0">
+            <div className="flex items-center gap-4">
               <img
                 src="/logo.jpeg"
                 alt="SHLA Logo"
-                className="w-11 h-11 sm:w-16 sm:h-16 rounded-2xl object-cover border-2 border-white/40 shadow-2xl backdrop-blur-sm bg-slate-900/60 flex-shrink-0"
+                className="w-16 h-16 rounded-2xl object-cover border-2 border-white/40 shadow-2xl backdrop-blur-sm bg-slate-900/60 flex-shrink-0"
               />
               <div className="overflow-hidden">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-[10px] sm:text-xs font-bold mb-1 backdrop-blur-md">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-bold mb-1 backdrop-blur-md">
                   <Sparkles className="w-3 h-3 text-amber-300 flex-shrink-0" />
                   <span className="truncate">Samar Hamdy Language Academy</span>
                 </div>
-                <h1 className="text-lg sm:text-2xl lg:text-3xl font-black text-white tracking-tight drop-shadow-md truncate">
+                <h1 className="text-2xl lg:text-3xl font-black text-white tracking-tight drop-shadow-md truncate">
                   SHLA Management
                 </h1>
-                <p className="text-[11px] sm:text-xs text-slate-300 font-medium max-w-xl drop-shadow-sm line-clamp-1 sm:line-clamp-2">
+                <p className="text-xs text-slate-300 font-medium max-w-xl drop-shadow-sm line-clamp-2">
                   {t(
                     'ملخص المجموعات، الطلاب، حركة الخزينة، والمبالغ المستحقة بلمسة واحدة.',
                     'Groups summary, students directory, treasury flow, and outstanding debt at your fingertips.'
@@ -95,23 +95,75 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Action Buttons: 2 columns on mobile, stacked on desktop */}
-            <div className="grid grid-cols-2 sm:flex sm:flex-col gap-2 w-full sm:w-auto sm:min-w-[160px] flex-shrink-0">
-              {/* Button: مجموعة جديدة */}
+            {/* Action Buttons: Stacked on desktop */}
+            <div className="flex flex-col gap-2 min-w-[160px] flex-shrink-0">
               <Link
                 href="/groups?action=new"
-                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition-all border border-blue-400/30 active:scale-98"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition-all border border-blue-400/30 active:scale-98"
               >
-                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                <Plus className="w-4 h-4 flex-shrink-0" />
                 <span className="truncate">{t('مجموعة جديدة', 'New Group')}</span>
               </Link>
 
-              {/* Button: إضافة طالب */}
               <Link
                 href="/students?action=new"
-                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-100 font-bold text-xs border border-slate-700/80 backdrop-blur-md transition-all active:scale-98 shadow-sm"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-100 font-bold text-xs border border-slate-700/80 backdrop-blur-md transition-all active:scale-98 shadow-sm"
               >
-                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 flex-shrink-0" />
+                <Plus className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                <span className="truncate">{t('إضافة طالب', 'Add Student')}</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* MOBILE HERO (< sm) - Full Uncropped Cover + Clean Docked Controls */}
+        <div className="sm:hidden flex flex-col">
+          {/* Full Cover Image showing 100% of the artwork without cropping sides */}
+          <div className="w-full aspect-[2.7/1] relative bg-slate-950 overflow-hidden">
+            <img
+              src={coverUrl}
+              alt="SHLA Academy Cover Banner"
+              className="w-full h-full object-cover object-center"
+            />
+          </div>
+
+          {/* Info and Buttons Card directly below the cover banner */}
+          <div className="p-3.5 bg-slate-950 border-t border-slate-800/80 flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <img
+                src="/logo.jpeg"
+                alt="SHLA Logo"
+                className="w-12 h-12 rounded-xl object-cover border border-white/20 shadow-md flex-shrink-0"
+              />
+              <div className="overflow-hidden flex-1">
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold mb-0.5">
+                  <Sparkles className="w-2.5 h-2.5 text-amber-300 flex-shrink-0" />
+                  <span className="truncate">Samar Hamdy Language Academy</span>
+                </div>
+                <h1 className="text-base font-black text-white tracking-tight truncate">
+                  SHLA Management
+                </h1>
+                <p className="text-[10px] text-slate-400 font-medium truncate">
+                  {t('ملخص المجموعات، الطلاب، وحركة الخزينة', 'Groups, students, and treasury summary')}
+                </p>
+              </div>
+            </div>
+
+            {/* Action Buttons Grid on Mobile */}
+            <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-900">
+              <Link
+                href="/groups?action=new"
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-blue-600 active:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/30 transition-all border border-blue-400/30 active:scale-98"
+              >
+                <Plus className="w-3.5 h-3.5 flex-shrink-0" />
+                <span className="truncate">{t('مجموعة جديدة', 'New Group')}</span>
+              </Link>
+
+              <Link
+                href="/students?action=new"
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-900 active:bg-slate-800 text-slate-100 font-bold text-xs border border-slate-700/80 transition-all active:scale-98"
+              >
+                <Plus className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                 <span className="truncate">{t('إضافة طالب', 'Add Student')}</span>
               </Link>
             </div>

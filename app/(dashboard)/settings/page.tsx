@@ -113,8 +113,11 @@ export default function SettingsPage() {
             </div>
             <div className="flex-1 text-center sm:text-right">
               <label className="block text-xs font-black text-slate-800 mb-0.5">غلاف الواجهة الرئيسية (Cover Banner)</label>
-              <p className="text-[11px] text-slate-400 mb-3">
+              <p className="text-[11px] text-slate-400 mb-1">
                 البانر العريض المعروض في قمة لوحة التحكم الرئيسية للأكاديمية
+              </p>
+              <p className="text-[10px] text-purple-600 font-bold mb-3">
+                المقاس المعتمد والمثالي: 1600 × 592 بكسل (نسبة 2.7:1)
               </p>
               <input
                 type="file"
