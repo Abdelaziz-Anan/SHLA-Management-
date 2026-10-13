@@ -55,7 +55,7 @@ export default function LoginPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         <div className="text-center">
           <img
-            src="/logo.jpeg"
+            src="/logo.jpeg?v=2"
             alt="SHLA Logo"
             className="w-24 h-24 rounded-3xl object-cover border-4 border-slate-700 shadow-2xl mx-auto mb-4 animate-float shadow-glow-blue"
           />

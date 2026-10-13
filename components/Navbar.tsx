@@ -22,7 +22,7 @@ export function Navbar({ user }: NavbarProps) {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2.5 group cursor-pointer">
             <img
-              src="/logo.jpeg"
+              src="/logo.jpeg?v=2"
               alt="SHLA Logo"
               className="w-9 h-9 rounded-xl object-cover border border-slate-200/90 shadow-xs flex-shrink-0 group-hover:scale-105 transition-transform duration-200"
             />

@@ -74,7 +74,7 @@ export default function DashboardPage() {
             {/* Academy Title & Badge Card */}
             <div className="flex items-center gap-4">
               <img
-                src="/logo.jpeg"
+                src="/logo.jpeg?v=2"
                 alt="SHLA Logo"
                 className="w-16 h-16 rounded-2xl object-cover border-2 border-white/40 shadow-2xl backdrop-blur-sm bg-slate-900/60 flex-shrink-0"
               />
@@ -131,7 +131,7 @@ export default function DashboardPage() {
           <div className="p-3.5 bg-slate-950 border-t border-slate-800/80 flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <img
-                src="/logo.jpeg"
+                src="/logo.jpeg?v=2"
                 alt="SHLA Logo"
                 className="w-12 h-12 rounded-xl object-cover border border-white/20 shadow-md flex-shrink-0"
               />

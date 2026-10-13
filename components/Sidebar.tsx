@@ -72,7 +72,7 @@ export function Sidebar({ user }: SidebarProps) {
         {/* Branding Header */}
         <div className="p-5 border-b border-slate-800/80 flex items-center gap-3">
           <img
-            src="/logo.jpeg"
+            src="/logo.jpeg?v=2"
             alt="SHLA Logo"
             className="w-10 h-10 rounded-xl object-cover border border-slate-700 shadow-md flex-shrink-0"
           />
@@ -202,7 +202,7 @@ export function Sidebar({ user }: SidebarProps) {
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-3">
                 <img
-                  src="/logo.jpeg"
+                  src="/logo.jpeg?v=2"
                   alt="SHLA Logo"
                   className="w-9 h-9 rounded-xl object-cover border border-slate-700"
                 />
