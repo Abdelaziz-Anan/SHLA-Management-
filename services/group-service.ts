@@ -117,6 +117,30 @@ export function updateGroup(id: string, updates: Partial<Group>): Group {
   groups[index] = updatedGroup;
   store.saveGroups(groups);
 
+  // If course_price changed, update students whose price was matching the old group price
+  if (updates.course_price !== undefined && Number(updates.course_price) !== oldGroup.course_price) {
+    const allEnrollments = store.getGroupStudents();
+    let hasChanges = false;
+    const updatedEnrollments = allEnrollments.map(gs => {
+      if (gs.group_id === id && (gs.course_price === oldGroup.course_price || !gs.course_price)) {
+        hasChanges = true;
+        const newPrice = Number(updates.course_price);
+        const paid = gs.total_paid || 0;
+        const rem = Math.max(0, newPrice - paid);
+        return {
+          ...gs,
+          course_price: newPrice,
+          total_paid: paid,
+          remaining_balance: rem,
+        };
+      }
+      return gs;
+    });
+    if (hasChanges) {
+      store.saveGroupStudents(updatedEnrollments);
+    }
+  }
+
   store.addAuditLog({
     user_id: currentUser?.id,
     user_name: currentUser?.full_name,

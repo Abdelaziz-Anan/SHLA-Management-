@@ -7,6 +7,7 @@ import { getCurrentUser } from '@/services/auth-service';
 import { Group, GroupStatus } from '@/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { StatusBadge } from '@/components/StatusBadge';
+import { EditGroupModal } from '@/components/EditGroupModal';
 import { exportGroupsToCSV } from '@/lib/export-utils';
 import { useLanguage } from '@/lib/language-context';
 import {
@@ -24,6 +25,7 @@ import {
   Check,
   Trash2,
   AlertTriangle,
+  Edit2,
 } from 'lucide-react';
 
 const WEEKDAYS = [
@@ -43,6 +45,8 @@ export default function GroupsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [editingGroup, setEditingGroup] = useState<Group | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   const isManager = currentUser?.role === 'manager';
@@ -107,6 +111,13 @@ export default function GroupsPage() {
     } catch (err: any) {
       alert(err.message || 'فشل حذف المجموعة');
     }
+  };
+
+  const handleOpenEditGroup = (e: React.MouseEvent, g: Group) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setEditingGroup(g);
+    setIsEditModalOpen(true);
   };
 
   // Performance memoization for filtered groups
@@ -344,6 +355,14 @@ export default function GroupsPage() {
                   <span>فتح كشف المجموعة والجدول</span>
                   <ChevronLeft className="w-4 h-4" />
                 </Link>
+
+                <button
+                  onClick={(e) => handleOpenEditGroup(e, group)}
+                  className="p-2.5 text-blue-600 hover:bg-blue-50 hover:text-blue-700 rounded-xl border border-slate-200 hover:border-blue-200 transition-colors"
+                  title="تعديل تفاصيل المجموعة"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
 
                 {isManager && (
                   <button
@@ -583,6 +602,20 @@ export default function GroupsPage() {
           </div>
         </div>
       )}
+
+      {/* EDIT GROUP MODAL */}
+      <EditGroupModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingGroup(null);
+        }}
+        group={editingGroup}
+        onSuccess={() => {
+          loadData();
+          alert('تم حفظ وتحديث بيانات المجموعة بنجاح!');
+        }}
+      />
     </div>
   );
 }

@@ -20,6 +20,7 @@ import { formatCurrency, formatDate, getPaymentStatus } from '@/lib/utils';
 import { exportGroupStudentsToCSV } from '@/lib/export-utils';
 import { StatusBadge } from '@/components/StatusBadge';
 import { ReceiptModal } from '@/components/ReceiptModal';
+import { EditGroupModal } from '@/components/EditGroupModal';
 import { useLanguage } from '@/lib/language-context';
 import {
   Calendar,
@@ -56,6 +57,9 @@ export default function GroupDetailsPage() {
   const [students, setStudents] = useState<GroupStudent[]>([]);
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [newSessionDate, setNewSessionDate] = useState<string>('');
+
+  // Edit Group Modal State
+  const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
 
   // Receipt Modal State
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
@@ -274,7 +278,17 @@ export default function GroupDetailsPage() {
           <span>{t('العودة إلى كل المجموعات', 'Back to all groups')}</span>
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Edit Group Button */}
+          <button
+            onClick={() => setIsEditGroupModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-98"
+            title="تعديل تفاصيل ومواعيد المجموعة"
+          >
+            <Edit2 className="w-3.5 h-3.5" />
+            <span>تعديل تفاصيل المجموعة</span>
+          </button>
+
           {currentUser?.role === 'manager' && (
             <button
               onClick={handleDeleteThisGroup}
@@ -832,6 +846,17 @@ export default function GroupDetailsPage() {
           }}
         />
       )}
+
+      {/* EDIT GROUP MODAL */}
+      <EditGroupModal
+        isOpen={isEditGroupModalOpen}
+        onClose={() => setIsEditGroupModalOpen(false)}
+        group={group}
+        onSuccess={() => {
+          loadData();
+          alert('تم حفظ وتحديث بيانات المجموعة بنجاح!');
+        }}
+      />
     </div>
   );
 }
