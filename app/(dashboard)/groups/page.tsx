@@ -381,22 +381,25 @@ export default function GroupsPage() {
 
       {/* CREATE GROUP MODAL (RESPONSIVE 1-COL MOBILE, 2-COL DESKTOP) */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-100 my-8 animate-slide-up duration-300">
-            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
-              <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex justify-center items-start sm:items-center p-2.5 sm:p-4 overflow-y-auto overscroll-contain animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-2xl border border-slate-100 my-2 sm:my-auto max-h-[95dvh] sm:max-h-[90vh] flex flex-col overflow-hidden animate-slide-up duration-300">
+            {/* Sticky Header */}
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-100 bg-white flex-shrink-0 z-10">
+              <h3 className="font-black text-sm sm:text-base text-slate-900 flex items-center gap-2">
                 <Plus className="w-5 h-5 text-blue-600" />
                 <span>إنشاء مجموعة دراسية جديدة</span>
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-full text-slate-400 hover:bg-slate-100"
+                className="p-1.5 rounded-full text-slate-400 hover:bg-slate-100 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateSubmit} className="mt-4 space-y-3.5 text-xs">
+            <form onSubmit={handleCreateSubmit} className="flex flex-col flex-1 overflow-hidden">
+              {/* Scrollable Form Body */}
+              <div className="overflow-y-auto p-4 sm:p-6 space-y-3.5 text-xs flex-1 overscroll-contain">
               {formError && (
                 <div className="p-3 bg-rose-50 text-rose-700 rounded-xl font-bold border border-rose-200">
                   {formError}
@@ -551,23 +554,25 @@ export default function GroupsPage() {
                   />
                 </div>
               </div>
+            </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl font-bold text-xs"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-md shadow-blue-600/25 active:scale-98"
-                >
-                  حفظ وإنشاء المجموعة
-                </button>
-              </div>
-            </form>
+            {/* Sticky Modal Footer */}
+            <div className="p-3.5 sm:p-4 border-t border-slate-100 bg-slate-50/90 backdrop-blur-sm flex items-center justify-end gap-2 flex-shrink-0 z-10">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl font-bold text-xs transition-colors"
+              >
+                إلغاء
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-md shadow-blue-600/25 active:scale-98 transition-all"
+              >
+                حفظ وإنشاء المجموعة
+              </button>
+            </div>
+          </form>
           </div>
         </div>
       )}

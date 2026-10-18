@@ -96,8 +96,11 @@ export default function StudentProfilePage() {
     }
     const allGroups = getGroups({ status: 'active' });
     setGroups(allGroups);
-    if (allGroups.length > 0 && !targetGroupId) {
-      setTargetGroupId(allGroups[0].id);
+    const otherGroups = allGroups.filter(g => g.id !== detail?.group_id);
+    if (otherGroups.length > 0) {
+      setTargetGroupId(otherGroups[0].id);
+    } else {
+      setTargetGroupId('');
     }
   };
 
@@ -250,20 +253,46 @@ export default function StudentProfilePage() {
     }
   };
 
+  const handleOpenTransferModal = () => {
+    const otherGroups = groups.filter(g => g.id !== gs?.group_id);
+    if (otherGroups.length === 0) {
+      alert('لا توجد مجموعات دراسية أخرى نشطة متاحة للنقل إليها');
+      return;
+    }
+    setTargetGroupId(otherGroups[0].id);
+    setTransferReason('تغيير الموعد المناسب للطالب');
+    setTransferError('');
+    setIsTransferModalOpen(true);
+  };
+
   const handleTransfer = (e: React.FormEvent) => {
     e.preventDefault();
     setTransferError('');
 
-    if (!targetGroupId || !transferReason) {
-      setTransferError('يرجى اختيار المجموعة الجديدة وكتابة السبب');
+    if (!targetGroupId) {
+      setTransferError('يرجى اختيار المجموعة الدراسية الجديدة');
+      return;
+    }
+
+    if (targetGroupId === gs?.group_id) {
+      setTransferError('يرجى اختيار مجموعة مختلفة عن مجموعة الطالب الحالية');
+      return;
+    }
+
+    if (!transferReason.trim()) {
+      setTransferError('يرجى كتابة سبب التحويل / النقل');
       return;
     }
 
     try {
-      transferStudentGroup(gsId, targetGroupId, transferReason);
+      const newEnrollment = transferStudentGroup(gsId, targetGroupId, transferReason.trim());
       setIsTransferModalOpen(false);
-      alert('تم نقل الطالب بنجاح إلى المجموعة الجديدة');
-      window.location.href = '/students';
+      alert('تم نقل الطالب بنجاح إلى المجموعة الجديدة مع ترحيل كافة المدفوعات السابقة');
+      if (newEnrollment && newEnrollment.id) {
+        window.location.href = `/students/${newEnrollment.id}`;
+      } else {
+        window.location.href = '/students';
+      }
     } catch (err: any) {
       setTransferError(err.message || 'فشل نقل الطالب');
     }
@@ -367,7 +396,7 @@ export default function StudentProfilePage() {
             </button>
 
             <button
-              onClick={() => setIsTransferModalOpen(true)}
+              onClick={handleOpenTransferModal}
               className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-98"
             >
               <ArrowRightLeft className="w-4 h-4 text-amber-400" />
@@ -864,7 +893,7 @@ export default function StudentProfilePage() {
       {/* TRANSFER STUDENT MODAL */}
       {isTransferModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 my-8 animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 my-auto sm:my-8 animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
               <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
                 <ArrowRightLeft className="w-5 h-5 text-amber-500" />
@@ -884,19 +913,25 @@ export default function StudentProfilePage() {
 
               <div>
                 <label className="block font-bold text-slate-700 mb-1">اختر المجموعة الدراسية الجديدة *</label>
-                <select
-                  value={targetGroupId}
-                  onChange={e => setTargetGroupId(e.target.value)}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800"
-                >
-                  {groups
-                    .filter(g => g.id !== gs.group_id)
-                    .map(g => (
-                      <option key={g.id} value={g.id}>
-                        مجموعة #{g.group_number} ({g.course_name} - {g.trainer_name})
-                      </option>
-                    ))}
-                </select>
+                {groups.filter(g => g.id !== gs.group_id).length === 0 ? (
+                  <div className="p-3 bg-amber-50 text-amber-800 rounded-xl font-bold border border-amber-200 text-xs">
+                    لا توجد أي مجموعات دراسية أخرى نشطة متاحة للنقل إليها حالياً.
+                  </div>
+                ) : (
+                  <select
+                    value={targetGroupId}
+                    onChange={e => setTargetGroupId(e.target.value)}
+                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:ring-2 focus:ring-amber-500"
+                  >
+                    {groups
+                      .filter(g => g.id !== gs.group_id)
+                      .map(g => (
+                        <option key={g.id} value={g.id}>
+                          مجموعة #{g.group_number} ({g.course_name} - {g.trainer_name})
+                        </option>
+                      ))}
+                  </select>
+                )}
               </div>
 
               <div>
@@ -906,7 +941,7 @@ export default function StudentProfilePage() {
                   value={transferReason}
                   onChange={e => setTransferReason(e.target.value)}
                   placeholder="اكتب سبب نقل الطالب للمجموعة الجديدة..."
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500"
                 />
               </div>
 
@@ -920,7 +955,8 @@ export default function StudentProfilePage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs shadow-md shadow-amber-600/25 active:scale-98"
+                  disabled={groups.filter(g => g.id !== gs.group_id).length === 0}
+                  className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs shadow-md shadow-amber-600/25 active:scale-98"
                 >
                   تأكيد النقل للمجموعة
                 </button>

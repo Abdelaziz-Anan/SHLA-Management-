@@ -342,7 +342,7 @@ export function transferStudentGroup(
   groupStudentId: string,
   newGroupId: string,
   reason: string
-): void {
+): GroupStudent {
   const currentUser = getCurrentUser();
   const groupStudents = store.getGroupStudents();
   const index = groupStudents.findIndex(gs => gs.id === groupStudentId);
@@ -352,28 +352,68 @@ export function transferStudentGroup(
   const oldEnrollment = groupStudents[index];
   const oldGroupId = oldEnrollment.group_id;
 
-  if (oldGroupId === newGroupId) {
-    throw new Error('الطالب موجود بالفعل في نفس المجموعة المحول إليها');
+  if (!newGroupId || oldGroupId === newGroupId) {
+    throw new Error('يرجى اختيار مجموعة مختلفة عن مجموعة الطالب الحالية');
   }
 
   const groups = store.getGroups();
   const newGroup = groups.find(g => g.id === newGroupId);
-  if (!newGroup) throw new Error('المجموعة الجديدة غير موجودة');
+  if (!newGroup) throw new Error('المجموعة المحول إليها غير موجودة');
+
+  const oldGroup = groups.find(g => g.id === oldGroupId);
+
+  // Check if student already has an active enrollment in newGroupId
+  const alreadyInNewGroup = groupStudents.find(
+    gs => gs.student_id === oldEnrollment.student_id && gs.group_id === newGroupId && gs.status === 'active'
+  );
+  if (alreadyInNewGroup) {
+    throw new Error(`الطالب مسجل بالفعل كطالب نشط في مجموعة #${newGroup.group_number}`);
+  }
+
+  const newEnrollmentId = `gs-${Date.now()}`;
+
+  // Migrate existing payments from old enrollment to new enrollment so paid balance is preserved
+  const allPayments = store.getPayments();
+  let totalMigratedPaid = 0;
+  let hasPaymentsToMigrate = false;
+  const updatedPayments = allPayments.map(p => {
+    if (p.group_student_id === groupStudentId) {
+      hasPaymentsToMigrate = true;
+      if (p.status === 'valid') {
+        totalMigratedPaid += p.amount;
+      }
+      return {
+        ...p,
+        group_student_id: newEnrollmentId,
+        notes: (p.notes ? p.notes + ' ' : '') + `[منقول من مجموعة #${oldGroup?.group_number || oldGroupId}]`,
+      };
+    }
+    return p;
+  });
+
+  if (hasPaymentsToMigrate) {
+    store.savePayments(updatedPayments);
+  }
+
+  // Calculate new remaining balance
+  const remaining = Math.max(0, newGroup.course_price - totalMigratedPaid);
 
   // Mark old enrollment transferred
   oldEnrollment.status = 'transferred';
+  oldEnrollment.notes = (oldEnrollment.notes ? oldEnrollment.notes + ' | ' : '') + `تم النقل إلى مجموعة #${newGroup.group_number}`;
   oldEnrollment.updated_at = new Date().toISOString();
 
   // Create new active enrollment
   const newEnrollment: GroupStudent = {
-    id: `gs-${Date.now()}`,
+    ...oldEnrollment,
+    id: newEnrollmentId,
     group_id: newGroupId,
-    student_id: oldEnrollment.student_id,
     booking_date: new Date().toISOString().split('T')[0],
-    booking_method: oldEnrollment.booking_method,
     course_price: newGroup.course_price,
+    total_paid: totalMigratedPaid,
+    remaining_balance: remaining,
     status: 'active',
-    notes: `نقل من المجموعة #${oldGroupId}: ${reason}`,
+    notes: `تم النقل من مجموعة #${oldGroup?.group_number || oldGroupId}: ${reason}`,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -388,6 +428,8 @@ export function transferStudentGroup(
     entity_type: 'StudentTransfer',
     entity_id: oldEnrollment.student_id,
   });
+
+  return newEnrollment;
 }
 
 export function deleteStudentEnrollment(groupStudentId: string): void {
